@@ -1,0 +1,7 @@
+art_output/
+.vscode/
+.temp/
+__pycache__/
+*.ipynb
+*.bkp
+*.dtmp

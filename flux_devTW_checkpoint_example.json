@@ -1,0 +1,372 @@
+{
+  "6": {
+    "inputs": {
+      "text": [
+        "40",
+        0
+      ],
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      },
+      "clip": [
+        "30",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "31",
+        0
+      ],
+      "vae": [
+        "30",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "27": {
+    "inputs": {
+      "width": 512,
+      "height": 512,
+      "batch_size": 3
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "30": {
+    "inputs": {
+      "ckpt_name": "flux1-dev-fp8.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "31": {
+    "inputs": {
+      "seed": 433221832992029,
+      "steps": 5,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "beta",
+      "denoise": 1,
+      "model": [
+        "30",
+        0
+      ],
+      "positive": [
+        "35",
+        0
+      ],
+      "negative": [
+        "33",
+        0
+      ],
+      "latent_image": [
+        "27",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "33": {
+    "inputs": {
+      "text": "",
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      },
+      "clip": [
+        "30",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "35": {
+    "inputs": {
+      "guidance": 3.5,
+      "conditioning": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "39": {
+    "inputs": {
+      "from_translate": "chinese (traditional)",
+      "to_translate": "english",
+      "add_proxies": false,
+      "proxies": "",
+      "auth_data": "",
+      "service": "GoogleTranslator [free]",
+      "text": "",
+      "Show proxy": "proxy_hide",
+      "Show authorization": "authorization_hide",
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      }
+    },
+    "class_type": "DeepTranslatorTextNode",
+    "_meta": {
+      "title": "Deep Translator Text Node"
+    }
+  },
+  "40": {
+    "inputs": {
+      "PreviewTextNode_0": "",
+      "text": [
+        "45",
+        0
+      ]
+    },
+    "class_type": "PreviewTextNode",
+    "_meta": {
+      "title": "Preview Text Node"
+    }
+  },
+  "44": {
+    "inputs": {
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "45": {
+    "inputs": {
+      "delimiter": ", ",
+      "clean_whitespace": "false",
+      "text_a": [
+        "39",
+        0
+      ],
+      "text_b": [
+        "46",
+        0
+      ]
+    },
+    "class_type": "Text Concatenate",
+    "_meta": {
+      "title": "Text Concatenate"
+    }
+  },
+  "46": {
+    "inputs": {
+      "value": "",
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      }
+    },
+    "class_type": "PrimitiveStringMultiline",
+    "_meta": {
+      "title": "style"
+    }
+  },
+  "54": {
+    "inputs": {
+      "url": "http://127.0.0.1:5000/upload",
+      "method_type": "post",
+      "request_field_name": "files",
+      "images": [
+        "8",
+        0
+      ],
+      "additional_request_headers": [
+        "66",
+        0
+      ]
+    },
+    "class_type": "Image Send HTTP",
+    "_meta": {
+      "title": "Image Send HTTP"
+    }
+  },
+  "57": {
+    "inputs": {
+      "PreviewTextNode_1": "{\n  \"message\": \"\\u4e0a\\u50b3\\u5931\\u6557: 'NoneType' object has no attribute 'get_player'\",\n  \"success\": false\n}",
+      "text": [
+        "54",
+        1
+      ]
+    },
+    "class_type": "PreviewTextNode",
+    "_meta": {
+      "title": "Preview Text Node"
+    }
+  },
+  "58": {
+    "inputs": {
+      "key": "player",
+      "py_dict": [
+        "60",
+        0
+      ],
+      "value": [
+        "63",
+        0
+      ]
+    },
+    "class_type": "DictSetNode",
+    "_meta": {
+      "title": "Pyobjects/Dict Set"
+    }
+  },
+  "60": {
+    "inputs": {},
+    "class_type": "DictCreateNode",
+    "_meta": {
+      "title": "Pyobjects/Create Dict"
+    }
+  },
+  "61": {
+    "inputs": {
+      "key": "room",
+      "py_dict": [
+        "58",
+        0
+      ],
+      "value": [
+        "64",
+        0
+      ]
+    },
+    "class_type": "DictSetNode",
+    "_meta": {
+      "title": "Pyobjects/Dict Set"
+    }
+  },
+  "63": {
+    "inputs": {
+      "value": "jerry"
+    },
+    "class_type": "PrimitiveString",
+    "_meta": {
+      "title": "player_id"
+    }
+  },
+  "64": {
+    "inputs": {
+      "value": "1234"
+    },
+    "class_type": "PrimitiveString",
+    "_meta": {
+      "title": "room_id"
+    }
+  },
+  "66": {
+    "inputs": {
+      "key": "round",
+      "py_dict": [
+        "61",
+        0
+      ],
+      "value": [
+        "67",
+        0
+      ]
+    },
+    "class_type": "DictSetNode",
+    "_meta": {
+      "title": "Pyobjects/Dict Set"
+    }
+  },
+  "67": {
+    "inputs": {
+      "value": "1"
+    },
+    "class_type": "PrimitiveString",
+    "_meta": {
+      "title": "round"
+    }
+  },
+  "70": {
+    "inputs": {
+      "output_path": "C:\\Users\\minis\\OneDrive\\桌面\\Aii\\art_output",
+      "filename_prefix": [
+        "72",
+        0
+      ],
+      "filename_delimiter": "_",
+      "filename_number_padding": 4,
+      "filename_number_start": "false",
+      "extension": "png",
+      "dpi": 300,
+      "quality": 100,
+      "optimize_image": "true",
+      "lossless_webp": "false",
+      "overwrite_mode": "false",
+      "show_history": "false",
+      "show_history_by_prefix": "true",
+      "embed_workflow": "true",
+      "show_previews": "true",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "Image Save",
+    "_meta": {
+      "title": "Image Save"
+    }
+  },
+  "72": {
+    "inputs": {
+      "delimiter": ", ",
+      "clean_whitespace": "true",
+      "text_a": [
+        "63",
+        0
+      ],
+      "text_b": [
+        "64",
+        0
+      ],
+      "text_c": [
+        "67",
+        0
+      ]
+    },
+    "class_type": "Text Concatenate",
+    "_meta": {
+      "title": "Text Concatenate"
+    }
+  }
+}

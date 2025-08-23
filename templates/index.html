@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>AI亂畫害我輸</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+</head>
+
+<body>
+    <!-- 載入遮罩 -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p id="loading-text">載入中...</p>
+        </div>
+    </div>
+    <!-- JavaScript -->
+    <div class="homepage-container" id="homepage-container">
+        <h1>AI亂畫害我輸</h1>
+        <p>一款讓 AI 亂畫的遊戲！</p>
+        <div class="create-join-room">
+            <div class="room-action">
+                <input class="text-input" type="text" id="host-name" name="name" maxlength="10" size="10"
+                    placeholder="暱稱" />
+                <button class="btn btn-primary" id="create-room-submit">
+                    創建房間
+                </button>
+            </div>
+            <div class="or-divider">
+                <span>或</span>
+            </div>
+            <div class="room-action">
+                <input class="text-input" type="text" id="room-code" name="name" maxlength="10" size="10"
+                    placeholder="房間代號" />
+                <input class="text-input" type="text" id="player-name" name="name" maxlength="10" size="10"
+                    placeholder="暱稱" />
+                <button class="btn btn-secondary" id="join-room-submit">
+                    加入房間
+                </button>
+            </div>
+        </div>
+        <button class="btn btn-info" id="rules-btn">
+            遊戲規則
+        </button>
+    </div>
+    <div class="room-container" id="room-container">
+        <div class="room-info">
+            <h1 class="room-title">
+                房間代碼: <span id="my-room-code"></span>
+                <button class="copy-btn" onclick="copyRoomCode()" title="複製房間代碼">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </h1>
+            <div class="room-status">
+                <span id="room-phase" class="phase-badge waiting">等待中</span>
+                <span id="player-count" class="player-count">1/8</span>
+            </div>
+        </div>
+        <div id="waiting-area" class="waiting-area">
+            <div class="players-grid" id="players-grid">
+                <!-- 玩家卡片將通過 JavaScript 動態生成 -->
+            </div>
+
+            <div class="waiting-tips">
+                <h3><i class="fas fa-lightbulb"></i> 遊戲提示</h3>
+                <ul>
+                    <li>等待其他玩家加入房間</li>
+                    <li>至少需要 3 名玩家才能開始遊戲</li>
+                    <li>點擊頭像可以更換您的角色形象</li>
+                    <li>房主可以在人數足夠時開始遊戲</li>
+                </ul>
+            </div>
+        </div>
+        <div class="room-actions">
+            <button id="start-game-btn" class="btn btn-success" onclick="startGame()" style="display: none;">
+                <i class="fas fa-play"></i>
+                開始遊戲
+            </button>
+            <button class="btn btn-danger" onclick="leaveRoom()">
+                <i class="fas fa-sign-out-alt"></i>
+                離開房間
+            </button>
+        </div>
+    </div>
+    <div class="gametable-container" id="gametable-container">
+        <div class="game-header">
+            <div class="game-info">
+                <span id="current-round">第 1 輪</span>
+                <span>類型:<span id="game-topic"></span><span></span>
+                    <span>主題:<span id="game-keyword"></span></span>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="playerblock">
+                <div class="playerBlockL" id="player1">
+                    <div class="player-avatar" id="player1-avatar"></div>
+                    <div class="player-name" id="player1-name"></div>
+                    <div class="player-art" id="player1-art"></div>
+                </div>
+                <div class="playerBlockL" id="player3">
+                    <div class="player-avatar" id="player3-avatar"></div>
+                    <div class="player-name" id="player3-name"></div>
+                    <div class="player-art" id="player3-art"></div>
+                </div>
+                <div class="playerBlockL" id="player5">
+                    <div class="player-avatar" id="player5-avatar"></div>
+                    <div class="player-name" id="player5-name"></div>
+                    <div class="player-art" id="player5-art"></div>
+                </div>
+                <div class="playerBlockL" id="player7">
+                    <div class="player-avatar" id="player7-avatar"></div>
+                    <div class="player-name" id="player7-name"></div>
+                    <div class="player-art" id="player7-art"></div>
+                </div>
+            </div>
+            <div class="drawing-area" id="drawing-interface">
+                <input type="text" id="prompt-text" name="prompt-text" maxlength="20" size="20" placeholder="想繪製的內容" />
+                <div class="drawing-controls">
+                    <button id="select-style" class="btn btn-warning">畫風選擇</button>
+                    <button id="submit-order" class="btn btn-primary">提交訂單</button>
+                </div>
+            </div>
+            <div calss="art-display" id="art-display">
+                <div class="artwork-waiting" id="artwork-waiting-interface">
+                    正在等待其他玩家選擇繪圖...
+                </div>
+                <div class="artwork-select" id="artwork-select-interface">
+                </div>
+                <div class="art-show" id="art-show-interface">
+                    <div class="art-show-header">
+                        <span id="showing-creator-name">作者名稱</span>
+                    </div>
+                    <div class="art-show-content" id="art-show-content">
+                    </div>
+                </div>
+            </div>
+            <div class="spy-voting" id="spy-voting-interface">
+            </div>
+            <div class="vote-count" id="vote-count-interface">
+            </div>
+            <div class="spy-guess" id="spy-guess-interface">
+            </div>
+            <div class="spy-guess-result" id="spy-guess-result-interface">
+            </div>
+            <div class="game-result" id="game-result-interface">
+            </div>
+            <div class="playerblock">
+                <div class="playerBlockR" id="player2">
+                    <div class="player-avatar" id="player2-avatar"></div>
+                    <div class="player-name" id="player2-name"></div>
+                    <div class="player-art" id="player2-art"></div>
+                </div>
+                <div class="playerBlockR" id="player4">
+                    <div class="player-avatar" id="player4-avatar"></div>
+                    <div class="player-name" id="player4-name"></div>
+                    <div class="player-art" id="player4-art"></div>
+                </div>
+                <div class="playerBlockR" id="player6">
+                    <div class="player-avatar" id="player6-avatar"></div>
+                    <div class="player-name" id="player6-name"></div>
+                    <div class="player-art" id="player6-art"></div>
+                </div>
+                <div class="playerBlockR" id="player8">
+                    <div class="player-avatar" id="player8-avatar"></div>
+                    <div class="player-name" id="player8-name"></div>
+                    <div class="player-art" id="player8-art"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="gallery-container" id="gallery-container">
+        <div class="follow-interface" id="follow-interface">
+        </div>
+    </div>
+
+    <script>
+        // 頁面載入完成後隱藏載入遮罩
+        window.addEventListener('load', function () {
+            hideLoading();
+            initParticles();
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/room.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/socket-client.js') }}"></script>
+</body>
+
+</html>
