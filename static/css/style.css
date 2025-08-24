@@ -1,8 +1,10 @@
 /* 基礎設定 */
 * {
+    font-family: 'openhuninn', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    white-space: nowrap;
     -webkit-touch-callout: none;
     -moz-touch-callout: none;
     -ms-touch-callout: none;
@@ -70,6 +72,17 @@
     --font-sans: 'openhuninn', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+h1 {
+    font-size: 40px;
+    font-weight: bold;
+    color: var(--text-primary);
+
+}
+
+p {
+    font-size: 20px;
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -84,6 +97,17 @@ body {
     line-height: 1.6;
     overflow-x: hidden;
     min-height: 100vh;
+    animation: scrollBackground 300s linear infinite;
+}
+
+@keyframes scrollBackground {
+    0% {
+        background-position: center 0, center 0;
+    }
+
+    100% {
+        background-position: center 0, center -2000%;
+    }
 }
 
 
@@ -93,13 +117,21 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    height: 40vh;
-    width: 30vw;
     padding: 20px;
     background: var(--primary-bg);
     border: 5px solid var(--secondary-color);
     border-radius: 12px;
-    aspect-ratio: 12/9;
+    width: 700px;
+    /* 固定寬度 - 這是"畫布"大小 */
+    height: 500px;
+    /* 固定高度 */
+    min-width: 0px;
+    /* 防止容器被壓縮 */
+    min-height: 0px;
+    /* 防止容器被壓縮 */
+    transform-origin: center center;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .create-join-room {
@@ -108,7 +140,7 @@ body {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    justify-content: space-around;
+    justify-content: space-evenly;
     align-items: center;
 }
 
