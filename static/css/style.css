@@ -1,6 +1,7 @@
 /* 基礎設定 */
 * {
     font-family: 'openhuninn', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    vertical-align: text-bottom;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -32,9 +33,21 @@
 
 }
 
+.selectable {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
 @font-face {
     font-family: 'openhuninn';
     src: url('../ttf/jf-openhuninn-2.1.ttf');
+}
+
+@font-face {
+    font-family: 'Noto Sans TC';
+    src: url('../ttf/NotoSansTC.ttf');
 }
 
 :root {
@@ -55,6 +68,7 @@
 
     --text-primary: #ffffff;
     --text-secondary: #a1a1aa;
+    --text-artistic: #271300;
     --text-muted: #71717a;
 
     --border-color: #374151;
@@ -64,6 +78,8 @@
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --shadowPNG: 5px 5px 5px #222;
+    --shadowInfoCard: 6px 6px 12px 2px rgba(0, 0, 0, 0.75);
 
     --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     --gradient-warm: linear-gradient(135deg, #f59e0b, #fc6790);
@@ -72,11 +88,9 @@
     --font-sans: 'openhuninn', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-h1 {
-    font-size: 40px;
-    font-weight: bold;
+.homepage-title {
+    font-size: 60px;
     color: var(--text-primary);
-
 }
 
 p {
@@ -96,8 +110,9 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     overflow-x: hidden;
-    min-height: 100vh;
-    animation: scrollBackground 300s linear infinite;
+    height: 100vh;
+    width: 100vw;
+    animation: scrollBackground 200000s linear infinite;
 }
 
 @keyframes scrollBackground {
@@ -106,10 +121,27 @@ body {
     }
 
     100% {
-        background-position: center 0, center -2000%;
+        background-position: center 0, center -200000vh;
     }
 }
 
+.js-scale {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 1920px;
+    /* 固定寬度 - 這是"畫布"大小 */
+    height: 1080px;
+    /* 固定高度 */
+    min-width: 0px;
+    /* 防止容器被壓縮 */
+    min-height: 0px;
+    /* 防止容器被壓縮 */
+    transform-origin: center center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
 
 /* --容器-- */
 .homepage-container {
@@ -154,15 +186,18 @@ body {
 
 .text-input {
     max-width: 190px;
-    padding: 0.875rem;
+    padding: 6px;
     margin: 5%;
-    font-size: 1rem;
+    font-size: 20px;
     border: 1.5px solid #000;
     border-radius: 0.5rem;
     box-shadow: 2.5px 3px 0 #000;
     outline: none;
     transition: ease 0.25s;
+    line-height: 27px;
+    text-indent: 3px;
 }
+
 
 .text-input:focus {
     box-shadow: 5.5px 7px 0 black;
@@ -170,13 +205,38 @@ body {
 
 .room-container {
     display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background: var(--primary-bg);
+    border: 5px solid var(--secondary-color);
+    border-radius: 12px;
+    width: 1920px;
+    /* 固定寬度 - 這是"畫布"大小 */
+    height: 1080px;
+    /* 固定高度 */
+    transform-origin: center center;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .gametable-container {
     display: none;
     flex-direction: column;
-    flex-wrap: nowrap;
     align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background: var(--primary-bg);
+    border: 5px solid var(--secondary-color);
+    border-radius: 12px;
+    width: 1920px;
+    /* 固定寬度 - 這是"畫布"大小 */
+    height: 1080px;
+    /* 固定高度 */
+    transform-origin: center center;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .game-content {
@@ -343,15 +403,12 @@ body {
 
 /* 按鈕樣式 */
 .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 24px;
-    margin: 5%;
+    height: 50px;
+    line-height: 50px;
+    width: 110px;
     border: none;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 20px;
     font-weight: 500;
     text-decoration: none;
     cursor: pointer;
@@ -382,6 +439,7 @@ body {
     box-shadow: var(--shadow);
 }
 
+
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
@@ -390,7 +448,6 @@ body {
 .btn-secondary {
     background: var(--bg-card);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
@@ -688,13 +745,7 @@ body {
     color: var(--text-muted);
 }
 
-/* 房間頁面樣式 */
-.room-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
-    min-height: 100vh;
-}
+
 
 .room-header {
     display: flex;
@@ -705,13 +756,10 @@ body {
     gap: 20px;
 }
 
-.room-info {
-    flex: 1;
-}
 
 .room-title {
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 500;
     margin-bottom: 10px;
     display: flex;
     align-items: center;
@@ -741,9 +789,12 @@ body {
 }
 
 .phase-badge {
-    padding: 6px 12px;
+    width: 110px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 30px;
     font-weight: 500;
 }
 
@@ -758,13 +809,19 @@ body {
 }
 
 .player-count {
+    height: 50px;
     color: var(--text-secondary);
     font-weight: 500;
+    font-size: 30px;
+    line-height: 50px;
 }
 
 .room-actions {
     display: flex;
-    gap: 12px;
+    gap: 24px;
+    /* 增加間隔 */
+    justify-content: center;
+    flex-direction: row;
 }
 
 /* 等待區域 */
@@ -774,69 +831,102 @@ body {
 
 .players-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(4, 380px);
+    grid-template-rows: repeat(2, 380px);
+    justify-items: center;
+    justify-content: center;
 }
 
 .player-card {
-    background: var(--bg-card);
-    border: 2px solid var(--border-color);
+    width: 250px;
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     border-radius: 16px;
-    padding: 20px;
     text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
-.player-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+
+.player-avatar-img {
+    position: absolute;
+    width: 220px;
 }
 
-.player-card.host {
-    border-color: var(--accent-color);
-    background: linear-gradient(135deg, var(--bg-card), rgba(245, 158, 11, 0.1));
+.player-frame-img {
+    width: 320px;
+    height: 320px;
+    z-index: 99;
 }
 
 .player-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    margin: 0 auto 16px;
-    background: var(--gradient-primary);
+    width: 320px;
+    height: 320px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
     transition: all 0.3s ease;
 }
 
-.player-card:hover .player-avatar {
+.player-avatar:hover {
     transform: scale(1.1);
+    -webkit-filter: drop-shadow(var(--shadowPNG));
+    filter: drop-shadow(var(--shadowPNG));
+}
+
+.player-info {
+    display: flex;
+    width: 226px;
+    height: 60px;
+    margin-top: 10px;
+    text-align: left;
+    /* background-color: #ffffff; */
+    background-image: url('../images/brassBg.png');
+    background-size: 226px 226px;
+    flex-direction: row;
+    justify-content: space-between;
+    font-family: 'Noto Sans TC';
+    align-items: center;
+    border-radius: 5px;
 }
 
 .player-name {
-    font-weight: 600;
-    margin-bottom: 8px;
+    width: 100%;
+    height: 63px;
+    line-height: 63px;
+    text-align: center;
+    font-size: 20px;
+    color: var(--text-artistic);
+    font-family: 'Noto Sans TC';
+    font-weight: 500;
 }
 
 .player-role {
+    width: 70px;
+    height: 60px;
+    line-height: 60px;
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--text-artistic);
+    font-family: 'Noto Sans TC';
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-size: 20px;
+    text-align: center;
 }
 
-.player-role.host {
-    color: var(--accent-color);
+.in-game-avatar-img {
+    width: 100px;
+    height: 100px;
 }
 
 .waiting-tips {
-    background: var(--bg-card);
     border-radius: 12px;
-    padding: 24px;
-    border-left: 4px solid var(--info-color);
+    padding-bottom: 10px;
+    padding: 18px;
 }
 
 .waiting-tips h3 {

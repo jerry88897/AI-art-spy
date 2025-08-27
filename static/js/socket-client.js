@@ -360,14 +360,14 @@ document.addEventListener('wheel', function (e) {
 });
 
 function updateAutoScale() {
-    const container = document.getElementById('homepage-container');
+    const container = document.getElementById('js-scale');
     // 1. 獲取當前視窗尺寸
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
     // 2. 計算兩個方向的縮放比例
-    const scaleX = windowWidth / 1200; // 基準寬度
-    const scaleY = windowHeight / 800; // 基準高度
+    const scaleX = windowWidth / 1920; // 基準寬度
+    const scaleY = windowHeight / 1080; // 基準高度
 
     // 3. 選擇較小比例（確保完全可見）
     const scale = Math.min(scaleX, scaleY) * 0.95; // 留 5% 邊距

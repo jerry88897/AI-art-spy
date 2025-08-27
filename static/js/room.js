@@ -366,7 +366,7 @@ class RoomPage {
             const player_avatar = document.getElementById(`player${i+1}-avatar`);
             const player_name = document.getElementById(`player${i+1}-name`);
             if (player_avatar) {
-                player_avatar.textContent = this.getAvatarEmoji(player.avatar_id);
+                player_avatar.innerHTML = `<img class="in-game-avatar-img" src="../static/images/avatar/${player.avatar_id}.png" alt="${player.name || 'Unknown'} 的頭像">`;
             }
             if (player_name) {
                 player_name.textContent = player.name || 'Unknown';
@@ -395,28 +395,26 @@ class RoomPage {
         if (!player) return '';
 
         const isCurrentPlayer = this.currentPlayer && this.currentPlayer.id === player.id;
-        const avatarEmoji = this.getAvatarEmoji(player.avatar_id);
-
+        player.avatar_id;
+        let frame = 'metalOld';
+        if (player.is_host) {
+            frame = 'gold';
+        } else if (this.myPlayerId === player.id) {
+            frame = 'metalNew';
+        }
         return `
             <div class="player-card ${player.is_host ? 'host' : ''} ${isCurrentPlayer ? 'current-player' : ''}" 
                  data-player-id="${player.id}">
                 <div class="player-avatar">
-                    ${avatarEmoji}
+                    <img class="player-avatar-img" src="../static/images/avatar/${player.avatar_id}.png" alt="${player.name} 的頭像">
+                    <img class="player-frame-img" src="../static/images/frame/${frame}.png">
                 </div>
-                <div class="player-name">${player.name || 'Unknown'}</div>
-                <div class="player-role ${player.is_host ? 'host' : ''}">
-                    ${player.is_host ? '房主' : '玩家'}
+                <div class="player-info">
+                    <div class="player-name">${player.name || 'Unknown'}${player.is_host ? ' 房主' : ''}</div>
+                    ${isCurrentPlayer ? '<div class="current-player-indicator">您</div>' : ''}
                 </div>
-                ${isCurrentPlayer ? '<div class="current-player-indicator">您</div>' : ''}
             </div>
         `;
-    }
-
-    // 獲取頭像表情符號
-    getAvatarEmoji(avatarId) {
-        const avatars = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃'];
-        const index = (avatarId && avatarId >= 1 && avatarId <= avatars.length) ? avatarId - 1 : 0;
-        return avatars[index];
     }
 
     // 檢查開始遊戲按鈕
@@ -432,7 +430,7 @@ class RoomPage {
         }
         const canStart = this.players && this.players.length >= 3 && isHost;
 
-        startButton.style.display = canStart ? 'inline-flex' : 'none';
+        startButton.style.visibility = canStart ? 'visible' : 'hidden';
     }
 
     // 其餘方法保持不變...

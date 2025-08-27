@@ -135,58 +135,12 @@ class HomePage {
         }
 
         if (!isValid) {
-            this.showInputError(inputGroup, errorMessage);
+            //this.showInputError(inputGroup, errorMessage);
         } else {
-            this.clearInputError(input);
+            //this.clearInputError(input);
         }
 
         return isValid;
-    }
-
-    // 顯示輸入錯誤
-    showInputError(inputGroup, message) {
-        this.clearInputError(inputGroup);
-
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'input-error';
-        errorDiv.textContent = message;
-        errorDiv.style.cssText = `
-            color: var(--danger-color);
-            font-size: 12px;
-            margin-top: 4px;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-        `;
-
-        inputGroup.appendChild(errorDiv);
-
-        // 觸發動畫
-        setTimeout(() => {
-            errorDiv.style.opacity = '1';
-            errorDiv.style.transform = 'translateY(0)';
-        }, 10);
-
-        // 添加錯誤樣式到輸入框
-        const input = inputGroup.querySelector('input');
-        if (input) {
-            input.style.borderColor = 'var(--danger-color)';
-        }
-    }
-
-    // 清除輸入錯誤
-    clearInputError(inputOrGroup) {
-        const inputGroup = inputOrGroup.closest ? inputOrGroup.closest('.input-group') : inputOrGroup;
-        const errorDiv = inputGroup.querySelector('.input-error');
-        if (errorDiv) {
-            errorDiv.remove();
-        }
-
-        // 移除錯誤樣式
-        const input = inputGroup.querySelector('input');
-        if (input) {
-            input.style.borderColor = '';
-        }
     }
 
     // 驗證主持人名稱
