@@ -377,7 +377,7 @@ def handle_change_avatar(data):
         emit('error', {'message': '更換頭像失敗'})
 
 
-@socketio.on('start_game')
+@socketio.on('topic_vote_start')
 def handle_start_game(data=None):
     """開始遊戲"""
     try:
@@ -400,37 +400,84 @@ def handle_start_game(data=None):
 
         # 隨機選擇主題和關鍵詞
         if GAME_TOPICS:
-            topic = random.choice(list(GAME_TOPICS.keys()))
-            keyword = random.choice(GAME_TOPICS[topic]["keywords"])
+            topics = random.sample(list(GAME_TOPICS.keys()), 6)
         else:
-            topic = "default_topic"
-            keyword = "default_keyword"
+            topics = ["default_topic"]
 
-        # 開始遊戲
-        room.start_game(topic, keyword)
+        room.topicCandidates = topics
+        room.topicVoteCount = [0] * len(topics)
+        # 發送遊戲訊息給所有玩家
+        socketio.emit('start_voting_topic', {
+            'room_id': room_id,
+            'topics': topics
+        }, room=room_id)
+        # debug直接跳到投票階段
+        # socketio.emit('start_voting_spy', {
+        #     'room_id': room_id,
+        #     'round': room.current_round,
+        #     'players': [p.to_dict() for p in room.players]
+        # }, room=room_id)
 
-        room.phase += 2  # 跳過顯示階段
+    except Exception as e:
+        logger.error(f'開始遊戲錯誤: {e}')
+        emit('error', {'message': '開始遊戲失敗，請重試'})
 
-        logger.info(
-            f'遊戲開始: {room_id}, 主題: {topic}, 關鍵詞: {keyword}, 玩家數: {len(room.players)}')
 
-        # 發送遊戲開始訊息給所有玩家
-        for game_player in room.players:
-            if game_player.is_spy:
-                socketio.emit('game_started', {
-                    'topic': topic,
-                    'keyword': None,  # 內鬼看不到關鍵詞
-                    'is_spy': True,
-                    'round': 1
-                }, room=game_player.socket_id)
-                logger.info(f'內鬼: {game_player.name}')
-            else:
-                socketio.emit('game_started', {
-                    'topic': topic,
-                    'keyword': keyword,
-                    'is_spy': False,
-                    'round': 1
-                }, room=game_player.socket_id)
+@socketio.on('topic_voted')
+def handle_topic_voted(data=None):
+    """處理主題投票"""
+    try:
+        room_id = session.get('room_id')
+        player_id = session.get('player_id')
+
+        if not room_id or not player_id:
+            emit('error', {'message': '請先加入房間'})
+            return
+
+        room = game_manager.get_room(room_id)
+        if not room:
+            emit('error', {'message': '房間不存在'})
+            return
+
+        player = room.get_player(player_id)
+
+        voted_topic_no = data['selected_topic_no']
+        room.topicVoteCount[voted_topic_no] += 1
+        player.topic_voted = True
+        # 檢查是否所有玩家都投票完成
+        if all(p.topic_voted for p in room.players):
+            # 計算投票結果
+            max_votes = max(room.topicVoteCount)
+            selected_topic_index = room.topicVoteCount.index(max_votes)
+            selected_topic = room.topicCandidates[selected_topic_index]
+            room.topic = selected_topic
+            room.keyword = random.choice(
+                GAME_TOPICS[selected_topic]["keywords"])
+            logger.info(f'投票完成，選定主題: {selected_topic}, 關鍵詞: {room.keyword}')
+            # 開始遊戲
+            room.start_game(selected_topic, room.keyword)
+
+            logger.info(
+                f'遊戲開始: {room_id}, 主題: {selected_topic}, 關鍵詞: {room.keyword}, 玩家數: {len(room.players)}')
+
+            # 發送遊戲開始訊息給所有玩家
+            for game_player in room.players:
+                if game_player.is_spy:
+                    socketio.emit('game_started', {
+                        'topic': selected_topic,
+                        'keyword': '?',  # 間諜看不到關鍵詞
+                        'is_spy': True,
+                        'round': 1
+                    }, room=game_player.socket_id)
+                    logger.info(f'間諜: {game_player.name}')
+                else:
+                    socketio.emit('game_started', {
+                        'topic': selected_topic,
+                        'keyword': room.keyword,
+                        'is_spy': False,
+                        'round': 1
+                    }, room=game_player.socket_id)
+            room.phase += 2  # 跳過顯示階段
         # debug直接跳到投票階段
         # socketio.emit('start_voting_spy', {
         #     'room_id': room_id,
@@ -788,10 +835,11 @@ def handle_submit_vote(data):
             logger.info(
                 f'投票結果: {most_voted_player.name} 得票最多 ({vote_counts[most_voted_player_id]}票)')
 
-            real_spy = next(p for p in room.players if p.is_spy)
+            real_spy = next(
+                (p for p in room.players if p.is_spy), room.players[0])
             real_spy_id = real_spy.id
             room.phase += 1
-            # 給內鬼顯示猜測選項
+            # 給間諜顯示猜測選項
             correct_keyword = room.keyword
             similar_options = [
                 kw for kw in GAME_TOPICS[room.topic]["keywords"] if kw != correct_keyword]
@@ -800,18 +848,26 @@ def handle_submit_vote(data):
             options.append(correct_keyword)
             random.shuffle(options)
 
-            # 檢查是否投中內鬼
+            # 檢查是否投中間諜
             if most_voted_player_id == real_spy_id:
                 room.guess_spy_correct = True
-                logger.info(f'投中內鬼: {most_voted_player.name}')
+                logger.info(f'投中間諜: {most_voted_player.name}')
             else:
                 room.guess_spy_correct = False
-                logger.info(f'沒投中內鬼: {real_spy.name}')
+                logger.info(f'沒投中間諜: {real_spy.name}')
+            # 將 key 和 value 對調，重複的 value 使用陣列存儲
+            inverted_votes = {}
+            for voter, voted in room.votes.items():
+                if voted not in inverted_votes:
+                    inverted_votes[voted] = []
+                inverted_votes[voted].append(voter)
+
             socketio.emit('voting_spy_result', {
                 'most_voted_player': most_voted_player_id,
                 'spy_is': real_spy_id,
                 'guess_spy_correct': room.guess_spy_correct,
                 'vote_counts': vote_counts,
+                'vote_results': inverted_votes,  # 使用對調後的結果
                 'spy_options': options
             }, room=room_id)
     except Exception as e:
@@ -821,7 +877,7 @@ def handle_submit_vote(data):
 
 @socketio.on('spy_guess')
 def handle_spy_guess(data):
-    """內鬼猜測關鍵詞"""
+    """間諜猜測關鍵詞"""
     try:
         room_id = session.get('room_id')
         player_id = session.get('player_id')
@@ -832,21 +888,25 @@ def handle_spy_guess(data):
         player = room.get_player(player_id)
 
         logger.info(
-            f'內鬼猜測: {player.name} 猜測「{guessed_keyword}」(正確答案: 「{room.keyword}」)')
+            f'間諜猜測: {player.name} 猜測「{guessed_keyword}」(正確答案: 「{room.keyword}」)')
         winType = None
         # 檢查猜測結果
         if guessed_keyword == room.keyword:
-            # 內鬼獲勝
+            # 間諜獲勝
             if room.guess_spy_correct:
                 winType = 'spyComeback'
-                logger.info(f'內鬼逆轉勝: {player.name} 猜對了關鍵詞')
+                logger.info(f'間諜逆轉勝: {player.name} 猜對了關鍵詞')
             else:
                 winType = 'spyBigWin'
-                logger.info(f'內鬼大獲全勝: {player.name} 猜對了關鍵詞')
+                logger.info(f'間諜大獲全勝: {player.name} 猜對了關鍵詞')
         else:
-            # 平民獲勝
-            winType = 'commonVictory'
-            logger.info(f'平民獲勝: {player.name} 猜錯了關鍵詞')
+            if room.guess_spy_correct:
+                # 平民獲勝
+                winType = 'commonVictory'
+                logger.info(f'平民獲勝: {player.name} 猜錯了關鍵詞')
+            else:
+                winType = 'spySmallWin'
+                logger.info(f'間諜小勝: {player.name} 但猜錯了關鍵詞')
 
         # 打包每個玩家的繪圖資料
         gallery_data = [
@@ -856,7 +916,6 @@ def handle_spy_guess(data):
             }
             for p in room.players
         ]
-
         logger.info(f'遊戲結束，打包畫廊資料')
 
         # 發送畫廊資料給所有玩家
@@ -864,6 +923,7 @@ def handle_spy_guess(data):
             'winType': winType,
             'correctAnswer': room.keyword,
             'spyGuess': guessed_keyword,
+            'correct': guessed_keyword == room.keyword,
             'gallery': gallery_data
         }, room=room_id)
         room.phase += 1

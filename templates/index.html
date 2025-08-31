@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <title>AI亂畫害我輸</title>
 
     <!-- CSS -->
@@ -11,7 +12,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
 </head>
 
-<body>
+<body class="body">
     <div id="js-scale" class="js-scale">
         <!-- 載入遮罩 -->
         <div id="loading-overlay" class="loading-overlay">
@@ -89,95 +90,126 @@
             <div class="game-header">
                 <div class="game-info">
                     <span id="current-round">第 1 輪</span>
-                    <span>類型:<span id="game-topic"></span><span></span>
-                        <span>主題:<span id="game-keyword"></span></span>
                 </div>
             </div>
             <div class="game-content">
                 <div class="playerblock">
                     <div class="playerBlockL" id="player1">
-                        <div class="player-avatar" id="player1-avatar"></div>
-                        <div class="player-name" id="player1-name"></div>
-                        <div class="player-art" id="player1-art"></div>
+                        <div class="in-game-player-avatar" id="player1-avatar">
+                            <div class="in-game-player-name" id="player1-name"></div>
+                        </div>
+                        <div class="in-game-player-art-L" id="player1-art"></div>
                     </div>
                     <div class="playerBlockL" id="player3">
-                        <div class="player-avatar" id="player3-avatar"></div>
-                        <div class="player-name" id="player3-name"></div>
-                        <div class="player-art" id="player3-art"></div>
+                        <div class="in-game-player-avatar" id="player3-avatar">
+                            <div class="in-game-player-name" id="player3-name"></div>
+                        </div>
+                        <div class="in-game-player-art-L" id="player3-art"></div>
                     </div>
                     <div class="playerBlockL" id="player5">
-                        <div class="player-avatar" id="player5-avatar"></div>
-                        <div class="player-name" id="player5-name"></div>
-                        <div class="player-art" id="player5-art"></div>
+                        <div class="in-game-player-avatar" id="player5-avatar">
+                            <div class="in-game-player-name" id="player5-name"></div>
+                        </div>
+                        <div class="in-game-player-art-L" id="player5-art"></div>
                     </div>
                     <div class="playerBlockL" id="player7">
-                        <div class="player-avatar" id="player7-avatar"></div>
-                        <div class="player-name" id="player7-name"></div>
-                        <div class="player-art" id="player7-art"></div>
+                        <div class="in-game-player-avatar" id="player7-avatar">
+                            <div class="in-game-player-name" id="player7-name"></div>
+                        </div>
+                        <div class="in-game-player-art-L" id="player7-art"></div>
+                    </div>
+                    <div class="topic-display" id="topic-display">
+                        <span class="topic-label">主題</span>
+                        <span class="topic-value" id="topic-value"></span>
                     </div>
                 </div>
                 <div class="drawing-area" id="drawing-interface">
-                    <input type="text" id="prompt-text" name="prompt-text" maxlength="20" size="20"
-                        placeholder="想繪製的內容" />
-                    <div class="drawing-controls">
-                        <button id="select-style" class="btn btn-warning">畫風選擇</button>
-                        <button id="submit-order" class="btn btn-primary">提交訂單</button>
+                    <div class="drawing-tips" id="drawing-tips"></div>
+                    <div class="subject-vote-area" id="subject-vote-area">
+                    </div>
+                    <div class="subject-announcement-area" id="subject-announcement-area">
+                    </div>
+                    <div class="drawing-input-area" id="drawing-input-area">
+                        <input class="text-input prompt-input" type="text" id="prompt-text" name="prompt-text"
+                            maxlength="30" size="30" placeholder="想繪製的內容..." />
+                        <div class="drawing-controls">
+                            <button id="select-style" class="btn btn-warning">畫風選擇</button>
+                            <button id="submit-order" class="btn btn-primary">提交訂單</button>
+                        </div>
                     </div>
                 </div>
-                <div calss="art-display" id="art-display">
-                    <div class="artwork-waiting" id="artwork-waiting-interface">
-                        正在等待其他玩家選擇繪圖...
+                <div class="art-display-interface" id="art-display-interface">
+                    <div class="drawing-tips" id="art-display-tips">正在等待其他玩家選擇繪圖...</div>
+                    <div class="artwork-waiting" id="art-waiting-area">
+                        <div class="waiting-spinner"></div>
                     </div>
-                    <div class="artwork-select" id="artwork-select-interface">
+                    <div class="art-select-area" id="art-select-area">
                     </div>
-                    <div class="art-show" id="art-show-interface">
-                        <div class="art-show-header">
-                            <span id="showing-creator-name">作者名稱</span>
-                        </div>
+                    <div class="art-show" id="art-show-area">
                         <div class="art-show-content" id="art-show-content">
+                        </div>
+                        <div class="player-info">
+                            <div class="player-name" id="showing-creator-name"></div>
                         </div>
                     </div>
                 </div>
                 <div class="spy-voting" id="spy-voting-interface">
+                    <div class="drawing-tips" id="spy-voting-tips">選出誰是間諜？</div>
+                    <div class="spy-voting-options" id="spy-voting-options">
+                    </div>
                 </div>
-                <div class="vote-count" id="vote-count-interface">
+                <div class="real-spy-interface" id="real-spy-interface">
                 </div>
                 <div class="spy-guess" id="spy-guess-interface">
+                    <div class="drawing-tips" id="spy-guess-tips"></div>
+                    <div class="spy-guess-options" id="spy-guess-options">
+                    </div>
                 </div>
                 <div class="spy-guess-result" id="spy-guess-result-interface">
                 </div>
                 <div class="game-result" id="game-result-interface">
+                    <div class="player-celebrate-block" id="player-celebrate-block">
+                    </div>
+                    <div class="drawing-tips" id="game-result-tips"></div>
                 </div>
                 <div class="playerblock">
                     <div class="playerBlockR" id="player2">
-                        <div class="player-avatar" id="player2-avatar"></div>
-                        <div class="player-name" id="player2-name"></div>
-                        <div class="player-art" id="player2-art"></div>
+                        <div class="in-game-player-avatar" id="player2-avatar">
+                            <div class="in-game-player-name" id="player2-name"></div>
+                        </div>
+                        <div class="in-game-player-art-R" id="player2-art"></div>
                     </div>
                     <div class="playerBlockR" id="player4">
-                        <div class="player-avatar" id="player4-avatar"></div>
-                        <div class="player-name" id="player4-name"></div>
-                        <div class="player-art" id="player4-art"></div>
+                        <div class="in-game-player-avatar" id="player4-avatar">
+                            <div class="in-game-player-name" id="player4-name"></div>
+                        </div>
+                        <div class="in-game-player-art-R" id="player4-art"></div>
                     </div>
                     <div class="playerBlockR" id="player6">
-                        <div class="player-avatar" id="player6-avatar"></div>
-                        <div class="player-name" id="player6-name"></div>
-                        <div class="player-art" id="player6-art"></div>
+                        <div class="in-game-player-avatar" id="player6-avatar">
+                            <div class="in-game-player-name" id="player6-name"></div>
+                        </div>
+                        <div class="in-game-player-art-R" id="player6-art"></div>
                     </div>
                     <div class="playerBlockR" id="player8">
-                        <div class="player-avatar" id="player8-avatar"></div>
-                        <div class="player-name" id="player8-name"></div>
-                        <div class="player-art" id="player8-art"></div>
+                        <div class="in-game-player-avatar" id="player8-avatar">
+                            <div class="in-game-player-name" id="player8-name"></div>
+                        </div>
+                        <div class="in-game-player-art-R" id="player8-art"></div>
+                    </div>
+                    <div class="topic-display keyWord-display" id="keyWord-display">
+                        <span class="topic-label">關鍵字</span>
+                        <span class="topic-value" id="keyWord-value"></span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="gallery-container" id="gallery-container">
-            <div class="follow-interface" id="follow-interface">
-            </div>
         </div>
-    </div>
 
+    </div>
+    <div class="follow-interface" id="follow-interface">
+    </div>
     <script>
         // 頁面載入完成後隱藏載入遮罩
         window.addEventListener('load', function () {
@@ -192,6 +224,7 @@
     <script src="{{ url_for('static', filename='js/home.js') }}"></script>
     <script src="{{ url_for('static', filename='js/room.js') }}"></script>
     <script src="{{ url_for('static', filename='js/socket-client.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/confetti.js') }}"></script>
 </body>
 
 </html>

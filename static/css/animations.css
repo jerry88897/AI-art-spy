@@ -1,61 +1,172 @@
 /* 動畫關鍵幀 */
+@keyframes bounce-in {
+    0% {
+        transform: scale(0.3);
+
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.05);
+
+        opacity: 1;
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes bounce-out {
+    0% {
+        transform: scale(1);
+    }
+
+    25% {
+        transform: scale(0.95);
+    }
+
+    50% {
+        transform: scale(1.1);
+
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.3);
+
+        opacity: 0;
+    }
+}
+
+@keyframes flip {
+    0% {
+        transform: perspective(400px) rotateY(0);
+        animation-timing-function: ease-out;
+    }
+
+    40% {
+        transform: perspective(400px) translateZ(150px) rotateY(170deg);
+        animation-timing-function: ease-out;
+    }
+
+    50% {
+        transform: perspective(400px) translateZ(150px) rotateY(190deg) scale(1);
+        animation-timing-function: ease-in;
+    }
+
+    80% {
+        transform: perspective(400px) rotateY(360deg) scale(0.95);
+        animation-timing-function: ease-in;
+    }
+
+    100% {
+        transform: perspective(400px) scale(1);
+        animation-timing-function: ease-in;
+    }
+}
+
+@keyframes bounce {
+    70% {
+        transform: translateY(0%);
+    }
+
+    80% {
+        transform: translateY(-15%);
+    }
+
+    90% {
+        transform: translateY(0%);
+    }
+
+    95% {
+        transform: translateY(-7%);
+    }
+
+    97% {
+        transform: translateY(0%);
+    }
+
+    99% {
+        transform: translateY(-3%);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
 @keyframes fadeIn {
     from {
-        opacity: 0;
         transform: translateY(20px);
+
+        opacity: 0;
     }
 
     to {
-        opacity: 1;
         transform: translateY(0);
+
+        opacity: 1;
     }
 }
 
 @keyframes fadeOut {
     from {
-        opacity: 1;
         transform: translateY(0);
+
+        opacity: 1;
     }
 
     to {
-        opacity: 0;
         transform: translateY(-20px);
+
+        opacity: 0;
     }
 }
 
 @keyframes slideInFromRight {
     from {
-        opacity: 0;
         transform: translateX(100%);
+
+        opacity: 0;
     }
 
     to {
-        opacity: 1;
         transform: translateX(0);
+
+        opacity: 1;
     }
 }
 
 @keyframes slideInFromLeft {
     from {
-        opacity: 0;
         transform: translateX(-100%);
+
+        opacity: 0;
     }
 
     to {
-        opacity: 1;
         transform: translateX(0);
+
+        opacity: 1;
     }
 }
 
 @keyframes slideInFromBottom {
     from {
-        opacity: 0;
         transform: translateY(100%);
+
+        opacity: 0;
     }
 
     to {
-        opacity: 1;
         transform: translateY(0);
+
+        opacity: 1;
     }
 }
 
@@ -166,7 +277,7 @@
 
 @keyframes drawProgress {
     from {
-        width: 0%;
+        width: 0;
     }
 
     to {
@@ -175,6 +286,24 @@
 }
 
 /* 動畫類別 */
+.bounce-in {
+    animation: bounce-in 1s ease forwards;
+}
+
+.bounce-out {
+    animation: bounce-out 1s ease forwards;
+}
+
+.flip {
+    animation: flip 2s ease infinite;
+
+    backface-visibility: visible !important;
+}
+
+.bounce {
+    animation: bounce 2s ease infinite;
+}
+
 .animate-fadeIn {
     animation: fadeIn 0.6s ease-out forwards;
 }
@@ -221,14 +350,16 @@
 
 /* 遊戲特殊動畫 */
 .game-area {
-    opacity: 0;
-    transform: translateY(20px);
     transition: all 0.6s ease;
+    transform: translateY(20px);
+
+    opacity: 0;
 }
 
 .game-area.show {
-    opacity: 1;
     transform: translateY(0);
+
+    opacity: 1;
 }
 
 /* 繪圖界面動畫 */
@@ -237,14 +368,16 @@
 }
 
 .drawing-waiting {
-    opacity: 0;
-    transform: scale(0.9);
     transition: all 0.4s ease;
+    transform: scale(0.9);
+
+    opacity: 0;
 }
 
 .drawing-waiting.show {
-    opacity: 1;
     transform: scale(1);
+
+    opacity: 1;
 }
 
 .drawing-spinner {
@@ -253,49 +386,62 @@
 
 .ai-icon {
     font-size: 4rem;
-    color: var(--primary-color);
+
     margin-bottom: 20px;
+
     animation: pulse 2s infinite;
+
+    color: var(--primary-color);
 }
 
 .progress-bar {
+    position: relative;
+
+    overflow: hidden;
+
     width: 300px;
     height: 8px;
-    background: var(--border-color);
-    border-radius: 4px;
     margin: 20px auto;
-    overflow: hidden;
-    position: relative;
+
+    border-radius: 4px;
+    background: var(--border-color);
 }
 
 .progress-fill {
     height: 100%;
-    background: var(--gradient-primary);
-    border-radius: 4px;
+
     animation: drawProgress 10s ease-in-out infinite;
+
+    border-radius: 4px;
+    background: var(--gradient-primary);
 }
 
 .drawing-result {
-    opacity: 0;
-    transform: translateY(30px);
     transition: all 0.6s ease;
+    transform: translateY(30px);
+
+    opacity: 0;
 }
 
 .drawing-result.show {
-    opacity: 1;
     transform: translateY(0);
+
+    opacity: 1;
 }
 
 .artwork-container {
-    background: var(--bg-card);
-    border-radius: 16px;
     padding: 20px;
-    box-shadow: var(--shadow-lg);
+
     transition: all 0.3s ease;
+
+    border-radius: 16px;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-lg);
 }
 
 .artwork-container:hover {
     transform: translateY(-4px);
+
     box-shadow: var(--shadow-xl);
 }
 
@@ -303,9 +449,11 @@
     width: 100%;
     max-width: 400px;
     height: auto;
-    border-radius: 12px;
     margin-bottom: 16px;
+
     transition: all 0.3s ease;
+
+    border-radius: 12px;
 }
 
 .artwork-container img:hover {
@@ -314,32 +462,38 @@
 
 /* 作品畫廊動畫 */
 .artworks-gallery {
-    opacity: 0;
-    transform: translateY(20px);
     transition: all 0.6s ease;
+    transform: translateY(20px);
+
+    opacity: 0;
 }
 
 .artworks-gallery.show {
-    opacity: 1;
     transform: translateY(0);
+
+    opacity: 1;
 }
 
 .gallery-grid {
     display: grid;
+
+    margin-top: 24px;
+
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
-    margin-top: 24px;
 }
 
 .artwork-item {
-    background: var(--bg-card);
-    border-radius: 16px;
     padding: 20px;
-    border: 2px solid var(--border-color);
+
     transition: all 0.3s ease;
-    opacity: 0;
     transform: translateY(30px);
     animation: fadeIn 0.6s ease-out forwards;
+
+    opacity: 0;
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--bg-card);
 }
 
 .artwork-item:nth-child(1) {
@@ -376,16 +530,19 @@
 
 .artwork-item:hover {
     transform: translateY(-6px);
-    box-shadow: var(--shadow-xl);
+
     border-color: var(--primary-color);
+    box-shadow: var(--shadow-xl);
 }
 
 .artwork-item img {
     width: 100%;
     height: 200px;
-    object-fit: cover;
-    border-radius: 12px;
     margin-bottom: 16px;
+
+    border-radius: 12px;
+
+    object-fit: cover;
 }
 
 .artwork-info {
@@ -394,76 +551,92 @@
 
 .artwork-player {
     font-weight: 600;
+
     margin-bottom: 8px;
+
     color: var(--primary-color);
 }
 
 .artwork-prompt {
-    color: var(--text-secondary);
     font-size: 14px;
     font-style: italic;
+
+    color: var(--text-secondary);
 }
 
 .artwork-round {
+    font-size: 12px;
+    font-weight: 500;
+
     position: absolute;
     top: 12px;
     right: 12px;
-    background: var(--primary-color);
-    color: white;
+
     padding: 4px 8px;
+
+    color: white;
     border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
+    background: var(--primary-color);
 }
 
 /* 投票界面動畫 */
 .voting-interface {
-    opacity: 0;
-    transform: translateY(20px);
     transition: all 0.6s ease;
+    transform: translateY(20px);
+
+    opacity: 0;
 }
 
 .voting-interface.show {
-    opacity: 1;
     transform: translateY(0);
+
+    opacity: 1;
 }
 
 .voting-grid {
     display: grid;
+
+    margin: 24px 0;
+
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
-    margin: 24px 0;
 }
 
 .vote-option {
-    background: var(--bg-card);
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
     padding: 20px;
+
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center;
+
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card);
 }
 
 .vote-option:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+
     border-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
 }
 
 .vote-option.selected {
+    transform: scale(1.02);
+
     border-color: var(--danger-color);
     background: rgba(239, 68, 68, 0.1);
-    transform: scale(1.02);
 }
 
 .vote-option img {
     width: 60px;
     height: 60px;
-    border-radius: 50%;
     margin-bottom: 12px;
-    border: 3px solid var(--border-color);
+
     transition: all 0.3s ease;
+
+    border: 3px solid var(--border-color);
+    border-radius: 50%;
 }
 
 .vote-option:hover img,
@@ -472,87 +645,71 @@
 }
 
 .voting-timer {
-    text-align: center;
     margin-top: 30px;
+
+    text-align: center;
 }
 
 .timer-circle {
-    width: 100px;
-    height: 100px;
-    border: 4px solid var(--border-color);
-    border-top: 4px solid var(--danger-color);
-    border-radius: 50%;
+    font-size: 24px;
+    font-weight: 700;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
+    width: 100px;
+    height: 100px;
     margin: 0 auto 16px;
+
     animation: rotate 60s linear;
-    font-size: 24px;
-    font-weight: 700;
+
     color: var(--danger-color);
+    border: 4px solid var(--border-color);
+    border-top: 4px solid var(--danger-color);
+    border-radius: 50%;
 }
 
-/* 內鬼猜測動畫 */
+/* 間諜猜測動畫 */
 .spy-guess-interface {
-    opacity: 0;
-    transform: translateY(20px);
     transition: all 0.6s ease;
+    transform: translateY(20px);
+
+    opacity: 0;
 }
 
 .spy-guess-interface.show {
-    opacity: 1;
     transform: translateY(0);
+
+    opacity: 1;
 }
 
-.guess-options {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-    margin: 24px 0;
-}
 
-.guess-option {
-    background: var(--bg-card);
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.guess-option:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--warning-color);
-}
-
-.guess-option.selected {
-    border-color: var(--warning-color);
-    background: rgba(245, 158, 11, 0.1);
-    transform: scale(1.02);
-}
 
 
 .game-result.show {
-    opacity: 1;
     transform: scale(1);
+
+    opacity: 1;
 }
 
 .result-content {
-    text-align: center;
-    background: var(--bg-card);
-    border-radius: 24px;
-    padding: 40px;
-    box-shadow: var(--shadow-xl);
     max-width: 600px;
     margin: 0 auto;
+    padding: 40px;
+
+    text-align: center;
+
+    border-radius: 24px;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-xl);
 }
 
 .result-icon {
     font-size: 6rem;
+
     margin-bottom: 24px;
+
     animation: bounce 2s;
 }
 
@@ -567,109 +724,135 @@
 .result-title {
     font-size: 2.5rem;
     font-weight: 700;
+
     margin-bottom: 16px;
+
     background: var(--gradient-primary);
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
+
+    -webkit-text-fill-color: transparent;
 }
 
 .result-message {
     font-size: 1.2rem;
-    color: var(--text-secondary);
-    margin-bottom: 24px;
     line-height: 1.6;
+
+    margin-bottom: 24px;
+
+    color: var(--text-secondary);
 }
 
 .result-details {
-    background: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 20px;
     margin: 24px 0;
+    padding: 20px;
+
     text-align: left;
+
+    border-radius: 12px;
+    background: var(--bg-secondary);
 }
 
 .result-actions {
     display: flex;
-    gap: 16px;
     justify-content: center;
+
     margin-top: 32px;
+
+    gap: 16px;
 }
 
 /* 頭像選擇動畫 */
 .avatar-grid {
     display: grid;
+
+    margin: 20px 0;
+
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 12px;
-    margin: 20px 0;
 }
 
 .avatar-option {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--border-color);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: var(--gradient-primary);
+    font-size: 2rem;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+
+    width: 80px;
+    height: 80px;
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+
     color: white;
+    border: 3px solid var(--border-color);
+    border-radius: 50%;
+    background: var(--gradient-primary);
 }
 
 .avatar-option:hover {
     transform: scale(1.1);
+
     border-color: var(--primary-color);
     box-shadow: var(--shadow-lg);
 }
 
 .avatar-option.selected {
-    border-color: var(--success-color);
     transform: scale(1.1);
     animation: glow 1s ease-in-out infinite;
+
+    border-color: var(--success-color);
 }
 
 /* 遊戲進度指示器動畫 */
 .game-progress {
     position: fixed;
+    z-index: 100;
     top: 100px;
     left: 50%;
-    transform: translateX(-50%);
-    background: var(--bg-card);
-    border-radius: 50px;
+
     padding: 16px 24px;
-    box-shadow: var(--shadow-lg);
-    z-index: 100;
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
+
     transition: all 0.4s ease;
+    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-20px);
+
+    opacity: 0;
+    border-radius: 50px;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-lg);
 }
 
 .game-progress.show {
-    opacity: 1;
     transform: translateX(-50%) translateY(0);
+
+    opacity: 1;
 }
 
 .progress-steps {
     display: flex;
     align-items: center;
+
     gap: 20px;
 }
 
 .step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     position: relative;
-    opacity: 0.5;
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
     transition: all 0.3s ease;
+
+    opacity: 0.5;
 }
 
 .step.active {
-    opacity: 1;
     transform: scale(1.1);
+
+    opacity: 1;
 }
 
 .step.completed {
@@ -678,22 +861,27 @@
 }
 
 .step-number {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--border-color);
-    color: var(--text-primary);
+    font-weight: 600;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+
+    width: 32px;
+    height: 32px;
     margin-bottom: 8px;
+
     transition: all 0.3s ease;
+
+    color: var(--text-primary);
+    border-radius: 50%;
+    background: var(--border-color);
 }
 
 .step.active .step-number {
-    background: var(--primary-color);
     animation: pulse 2s infinite;
+
+    background: var(--primary-color);
 }
 
 .step.completed .step-number {
@@ -702,19 +890,23 @@
 
 .step-label {
     font-size: 12px;
+
     text-align: center;
     white-space: nowrap;
 }
 
 .step:not(:last-child):after {
-    content: '';
     position: absolute;
     top: 16px;
     right: -30px;
+
     width: 40px;
     height: 2px;
-    background: var(--border-color);
+
+    content: '';
     transition: all 0.3s ease;
+
+    background: var(--border-color);
 }
 
 .step.completed:not(:last-child):after {
@@ -724,29 +916,35 @@
 /* 粒子背景動畫 */
 #particles-background {
     position: fixed;
+    z-index: -1;
     top: 0;
     left: 0;
+
     width: 100%;
     height: 100%;
+
     pointer-events: none;
-    z-index: -1;
 }
 
 .particle {
     position: absolute;
-    background: rgba(99, 102, 241, 0.1);
-    border-radius: 50%;
-    pointer-events: none;
+
     animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.1);
 }
 
 .particle:nth-child(2n) {
     animation-delay: -2s;
+
     background: rgba(139, 92, 246, 0.1);
 }
 
 .particle:nth-child(3n) {
     animation-delay: -4s;
+
     background: rgba(245, 158, 11, 0.1);
 }
 
@@ -756,29 +954,36 @@
 }
 
 .loading-spinner::before {
-    content: '';
     position: absolute;
     top: -20px;
     left: 50%;
-    transform: translateX(-50%);
+
+    overflow: hidden;
+
     width: 100px;
     height: 4px;
-    background: var(--border-color);
+
+    content: '';
+    transform: translateX(-50%);
+
     border-radius: 2px;
-    overflow: hidden;
+    background: var(--border-color);
 }
 
 .loading-spinner::after {
-    content: '';
     position: absolute;
     top: -20px;
     left: 50%;
-    transform: translateX(-50%);
+
     width: 30%;
     height: 4px;
-    background: var(--primary-color);
-    border-radius: 2px;
+
+    content: '';
+    transform: translateX(-50%);
     animation: loading-progress 2s ease-in-out infinite;
+
+    border-radius: 2px;
+    background: var(--primary-color);
 }
 
 @keyframes loading-progress {
@@ -806,8 +1011,8 @@
     }
 
     .result-actions {
-        flex-direction: column;
         align-items: center;
+        flex-direction: column;
     }
 
     .result-actions .btn {
@@ -820,8 +1025,9 @@
     }
 
     .step:not(:last-child):after {
-        width: 24px;
         right: -18px;
+
+        width: 24px;
     }
 
     .gallery-grid {
@@ -839,8 +1045,8 @@
     *,
     *::before,
     *::after {
+        transition-duration: 0.01ms !important;
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
     }
 }

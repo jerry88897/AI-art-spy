@@ -44,7 +44,7 @@ function createPoisson() {
   const domain = [radius, 1 - radius];
   let measure = 1 - radius2;
   const spline = [0, 1];
-  
+
   while (measure) {
     let dart = measure * random();
     let i, l, interval, a, b;
@@ -107,7 +107,7 @@ class Confetto {
       this.splineY[i] = deviation * random();
     }
     this.splineY[0] = this.splineY[l] = deviation * random();
-    
+
     // 初始化 DOM 元素
     this.initializeDOM();
   }
@@ -129,7 +129,7 @@ class Confetto {
     this.outer.style.transform = `rotate(${360 * random()}deg)`;
     this.outer.style.left = `${this.x}px`;
     this.outer.style.top = `${this.y}px`;
-    
+
     // 設定內層元素樣式
     this.inner.style.width = '100%';
     this.inner.style.height = '100%';
@@ -173,7 +173,7 @@ function poof(duration) {
   container.style.height = '0';
   container.style.overflow = 'visible';
   container.style.zIndex = '9999';
-  
+
   // 預設 5 秒
   const ttl = duration == null ? 5000 : duration;
 

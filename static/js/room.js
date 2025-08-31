@@ -1,6 +1,21 @@
 // 房間功能模組
 class RoomPage {
     constructor(roomId, PlayerId) {
+        //參數設定
+        this.timeBeforeShowVoteCount = 2000;
+        this.timeBeforeShowVoteDetail = 2000;
+        this.timeBeforeShowRealSpy = 3000;
+        this.timeBeforeShowSpyGuess = 9000;
+        this.RouletteTime = 5000;
+        this.timeBeforeShowRealTopic = 3000;
+        this.timeBeforeShowResult = 3000;
+        this.timeBeforeCelebration = 4000;
+
+        this.hasChooseTopic = false;
+        this.hasGuessedTopic = false;
+
+        this.cleanUpTime = 2000;
+
         this.roomId = roomId;
         this.players = [];
         this.currentPlayer = null;
@@ -10,6 +25,7 @@ class RoomPage {
         this.selectedAvatar = null;
         this.countdownTimer = null;
         this.myPlayerId = PlayerId || null; // 新增 myPlayerId 屬性
+        this.IamSpy = false;
         this.spyId = null;
         this.homepage_container = document.getElementById('homepage-container');
         this.room_container = document.getElementById('room-container');
@@ -27,13 +43,20 @@ class RoomPage {
             'drawing-waiting-interface',
             'artwork-waiting-interface',
             'artwork-select-interface',
-            'art-show-interface',
+            'art-display-interface',
             'spy-voting-interface',
-            'vote-count-interface',
+            'real-spy-interface',
             'spy-guess-interface',
             'spy-guess-result-interface',
             'game-result-interface'
         ];
+        this.areas = [
+            'subject-vote-area',
+            'subject-announcement-area',
+            'drawing-input-area',
+            'art-select-area',
+            'art-show-area'
+        ]
         this.init();
     }
 
@@ -125,7 +148,6 @@ class RoomPage {
         const savedState = GameUtils.gameState;
         window.socketClient.getRoomInfo();
         //this.updateRoomInfo();
-        this.generateAvatarOptions();
     }
 
 
@@ -245,6 +267,33 @@ class RoomPage {
         }
     }
 
+    // 處理開始投票主題
+    handleStartVotingTopic(data) {
+        if (!data) return;
+
+        this.drawInGamePlayersDisplay();
+        this.showGameArea();
+        const drawingTips = document.getElementById('drawing-tips');
+        drawingTips.innerHTML = '投票選出主題';
+        const topicArea = document.getElementById('subject-vote-area');
+        topicArea.innerHTML = '';
+        data.topics.forEach((topic, index) => {
+            const topicItem = document.createElement('div');
+            topicItem.className = 'topic-item';
+            topicItem.textContent = topic;
+            // Add click event to pass the index to window.submitSelectedTopic
+            topicItem.addEventListener('click', () => {
+                if (window.submitSelectedTopic && !this.hasChooseTopic) {
+                    window.submitSelectedTopic(index);
+                    this.hasChooseTopic = true;
+                }
+            });
+            topicArea.appendChild(topicItem);
+        });
+        this.showInterface('drawing-interface');
+        this.showArea('subject-vote-area');
+    }
+
     // 處理遊戲開始
     handleGameStarted(data) {
         console.log('Game started:', data);
@@ -252,45 +301,78 @@ class RoomPage {
         if (!data) return;
 
         this.gameData = data;
-        this.drawInGamePlayersDisplay()
+        this.IamSpy = data.is_spy;
         this.showGameArea();
-        this.updateGameInfo(data);
 
         //缺展示提詞畫面
-
+        this.handleTopicAndKeyWordDisplay(data)
         this.handleWriteDrawingPrompt()
         //this.updateProgressIndicator(1);
 
         GameUtils.showSuccess('遊戲開始！請根據您的角色輸入繪圖提詞');
     }
+    handleTopicAndKeyWordDisplay(data) {
+        const topicDisplay = document.getElementById('topic-display');
+        const keyWordDisplay = document.getElementById('keyWord-display');
+        const topicValue = document.getElementById('topic-value');
+        const keyWordValue = document.getElementById('keyWord-value');
+
+        if (topicValue) {
+            topicValue.textContent = data.topic || '未知主題';
+        }
+
+        if (keyWordValue) {
+            keyWordValue.textContent = data.keyword || '未知關鍵字';
+        }
+        topicDisplay.style.display = 'flex';
+        keyWordDisplay.style.display = 'flex';
+    }
 
     // 處理輸入繪圖提詞開始
     handleWriteDrawingPrompt() {
         const promptInput = document.getElementById('prompt-text');
+        const drawingTips = document.getElementById('drawing-tips');
+        if (this.IamSpy) {
+            drawingTips.innerHTML = '你是間諜，根據主題畫出模稜兩可的圖片<br>裝作你也知道關鍵字';
+        } else {
+            drawingTips.innerHTML = '你是畫家，畫出跟關鍵字相關的圖片<br>但留點模糊空間，不要讓對手猜到關鍵字';
+        }
+
         if (promptInput) {
             promptInput.value = '';
         }
+        this.showArea('drawing-input-area');
         this.showInterface('drawing-interface')
     }
 
 
     handleMyArt(data) {
         if (Array.isArray(data.image_data)) {
-            const artworkSelect = document.getElementById('artwork-select-interface');
+            const artworkSelect = document.getElementById('art-select-area');
             if (!artworkSelect) return;
 
             artworkSelect.innerHTML = ''; // 清空之前的內容
             data.image_data.forEach((imageData, index) => {
+                const imgdiv = document.createElement('div');
+                imgdiv.className = 'artwork-select-container'; // 可選：添加樣式類名
                 const img = document.createElement('img');
                 img.src = `data:image/png;base64,${imageData}`;
                 img.alt = `Artwork ${index + 1}`;
-                img.className = 'artwork-image'; // 可選：添加樣式類名
+                img.className = 'artwork-select-image'; // 可選：添加樣式類名
 
-                img.addEventListener('click', () => {
+
+                imgdiv.appendChild(img); // 添加 img 到容器中
+
+                const frameImg = document.createElement('img');
+                frameImg.src = `../static/images/frame/default.png`;
+                frameImg.className = 'artwork-select-frame'; // 可選：添加樣式類名
+                frameImg.addEventListener('click', () => {
                     window.submitSelectedArt(index); // 點擊時觸發並傳送索引值
                 });
 
-                artworkSelect.appendChild(img); // 添加 img 到容器中
+                imgdiv.appendChild(frameImg); // 添加框架到容器中
+                artworkSelect.appendChild(imgdiv); // 添加 imgdiv 到容器中
+
             });
         }
     }
@@ -304,21 +386,44 @@ class RoomPage {
 
         if (artImage && data.selected_art) {
             artImage.src = `data:image/png;base64,${data.selected_art}`;
-            artImage.style.display = 'block';
             artImage.className = 'art-show-image';
+            artShowContent.appendChild(artImage);
         }
-        artShowContent.appendChild(artImage);
-        const player = data.players.find(p => p.id === data.player_id);
+        const artFrame = document.createElement('img');
+        artFrame.src = '../static/images/frame/default.png';
+        artFrame.className = 'art-show-frame';
+        artShowContent.appendChild(artFrame);
+
+        const playerIndex = data.players.findIndex(p => p.id === data.player_id);
+        const player = data.players[playerIndex];
+        const creatorArtPlace = document.getElementById(`player${playerIndex + 1}-art`);
+        if (creatorArtPlace) {
+            const inGameArtImageBlock = document.createElement('div');
+            inGameArtImageBlock.className = 'in-game-player-art-block';
+            const inGameArtImage = document.createElement('img');
+            inGameArtImage.src = `data:image/png;base64,${data.selected_art}`;
+            inGameArtImage.className = 'in-game-player-art-img';
+            const inGameArtFrame = document.createElement('img');
+            inGameArtFrame.src = '../static/images/frame/default.png';
+            inGameArtFrame.className = 'in-game-player-art-frame';
+            inGameArtImageBlock.appendChild(inGameArtImage);
+            inGameArtImageBlock.appendChild(inGameArtFrame);
+            creatorArtPlace.appendChild(inGameArtImageBlock);
+        }
         showingCreatorName.textContent = player ? `${player.name} 的作品` : '未知玩家的作品';
-        this.showInterface('art-show-interface');
+        this.showArea('art-show-area')
     }
 
     handleStartShowing(data) {
+        const artDisplayTips = document.getElementById('art-display-tips');
         if (data.show_art_order[data.now_showing] == this.myPlayerId) {
-            this.showInterface('artwork-select-interface')
+            artDisplayTips.innerHTML = 'AI驕傲地完成了創作<br>請選擇一個想展示的作品';
+            this.showArea('art-select-area')
         } else {
-            this.showInterface('artwork-waiting-interface')
+            artDisplayTips.innerHTML = '正在等待其他玩家選擇繪圖...';
+            this.showArea('art-waiting-area')
         }
+        this.showInterface('art-display-interface')
     }
 
     // 處理繪圖錯誤
@@ -335,28 +440,49 @@ class RoomPage {
     }
 
     handleSpyVoteResult(data) {
-        this.generateVoteCountInterface(data);
-        this.showInterface('vote-count-interface');
-        this.generateSpyGuessInterface(data);
-        this.spyId = data.spy_is;
-        setTimeout(() => {
-            this.showInterface('spy-guess-interface');
-        }, 10000);
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+        wait(this.timeBeforeShowVoteCount)
+            .then(() => {
+                this.showInterface('real-spy-interface');
+                this.generateVoteCountDetail(data);
+                this.spyId = data.spy_is;
+                return wait(this.timeBeforeShowRealSpy);
+            })
+            .then(() => {
+                this.generateRealSpy(data);
+                return wait(this.timeBeforeShowSpyGuess);
+            })
+            .then(() => {
+                document.querySelectorAll('.vote-result-bar').forEach(bar => {
+                    bar.classList.add('bounce-out');
+                });
+                return wait(this.cleanUpTime);
+            })
+            .then(() => {
+                document.querySelectorAll('.vote-result-bar').forEach(bar => {
+                    bar.remove();
+                });
+                this.generateSpyGuessInterface(data);
+                this.showInterface('spy-guess-interface');
+            });
     }
 
     // 處理遊戲結束
     handleGameEnded(data) {
-        this.generateSpyGuessResultInterface(data);
         this.showInterface('spy-guess-result-interface');
-        setTimeout(() => {
-            this.generateGameResult(data);
-            this.showInterface('game-result-interface');
-        }, 5000);
-        setTimeout(() => {
-            this.generateGallery(data.gallery);
-            this.showContainer('gallery-container');
-        }, 10000);
 
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        this.generateSpyGuessResultInterface(data)
+            .then(() => {
+                this.generateGameResult(data);
+                this.showInterface('game-result-interface');
+                return wait(5000);
+            })
+            .then(() => {
+                this.generateGallery(data.gallery);
+                this.showContainer('gallery-container');
+            });
     }
 
     // 更新玩家顯示
@@ -366,7 +492,11 @@ class RoomPage {
             const player_avatar = document.getElementById(`player${i+1}-avatar`);
             const player_name = document.getElementById(`player${i+1}-name`);
             if (player_avatar) {
-                player_avatar.innerHTML = `<img class="in-game-avatar-img" src="../static/images/avatar/${player.avatar_id}.png" alt="${player.name || 'Unknown'} 的頭像">`;
+                const img = document.createElement('img');
+                img.className = 'in-game-avatar-img';
+                img.src = `../static/images/avatar/${player.avatar_id}.png`;
+                img.alt = `${player.name || 'Unknown'} 的頭像`;
+                player_avatar.insertBefore(img, player_avatar.firstChild);
             }
             if (player_name) {
                 player_name.textContent = player.name || 'Unknown';
@@ -403,18 +533,18 @@ class RoomPage {
             frame = 'metalNew';
         }
         return `
-            <div class="player-card ${player.is_host ? 'host' : ''} ${isCurrentPlayer ? 'current-player' : ''}" 
-                 data-player-id="${player.id}">
-                <div class="player-avatar">
-                    <img class="player-avatar-img" src="../static/images/avatar/${player.avatar_id}.png" alt="${player.name} 的頭像">
-                    <img class="player-frame-img" src="../static/images/frame/${frame}.png">
-                </div>
-                <div class="player-info">
-                    <div class="player-name">${player.name || 'Unknown'}${player.is_host ? ' 房主' : ''}</div>
-                    ${isCurrentPlayer ? '<div class="current-player-indicator">您</div>' : ''}
-                </div>
+        <div class="player-card ${player.is_host ? 'host' : ''} ${isCurrentPlayer ? 'current-player' : ''}" 
+                data-player-id="${player.id}">
+            <div class="player-avatar">
+                <img class="player-avatar-img" src="../static/images/avatar/${player.avatar_id}.png" alt="${player.name} 的頭像">
+                <img class="player-frame-img" src="../static/images/frame/${frame}.png">
             </div>
-        `;
+            <div class="player-info">
+                <div class="player-name">${player.name || 'Unknown'}${player.is_host ? ' 房主' : ''}</div>
+                ${isCurrentPlayer ? '<div class="current-player-indicator">您</div>' : ''}
+            </div>
+        </div>
+    `;
     }
 
     // 檢查開始遊戲按鈕
@@ -447,25 +577,6 @@ class RoomPage {
         gametable_container.style.display = 'flex';
     }
 
-    // 更新遊戲資訊
-    updateGameInfo(data) {
-        if (!data) return;
-
-        const topicEl = document.getElementById('game-topic');
-        const keywordEl = document.getElementById('game-keyword');
-        const spyIndicator = document.getElementById('spy-indicator');
-
-        if (topicEl) topicEl.textContent = data.topic || '';
-
-        if (data.is_spy) {
-            if (topicEl) topicEl.textContent = data.topic || '';
-            if (keywordEl) keywordEl.textContent = '未知' || '';
-        } else {
-            if (topicEl) topicEl.textContent = data.topic || '';
-            if (keywordEl) keywordEl.textContent = data.keyword || '';
-        }
-    }
-
     showContainer(containerName) {
         this.container.forEach(id => {
             const element = document.getElementById(id);
@@ -484,6 +595,15 @@ class RoomPage {
             }
         });
     }
+    showArea(areaName) {
+        this.areas.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = (id === areaName) ? 'flex' : 'none';
+            }
+        });
+    }
+
     // 隱藏所有界面
     hideAllInterfaces() {
         this.interfaces.forEach(id => {
@@ -514,78 +634,250 @@ class RoomPage {
         if (!drawing) return '';
 
         return `
-            <div class="artwork-item" style="animation-delay: ${index * 0.1}s">
-                <div class="artwork-round">第${drawing.round || 1}輪</div>
-                <img src="${drawing.image_data || ''}" alt="${drawing.player_name || 'Unknown'}的作品">
-                <div class="artwork-info">
-                    <div class="artwork-player">${drawing.player_name || 'Unknown'}</div>
-                    <div class="artwork-prompt">"${drawing.prompt || ''}"</div>
-                </div>
+        <div class="artwork-item" style="animation-delay: ${index * 0.1}s">
+            <div class="artwork-round">第${drawing.round || 1}輪</div>
+            <img src="${drawing.image_data || ''}" alt="${drawing.player_name || 'Unknown'}的作品">
+            <div class="artwork-info">
+                <div class="artwork-player">${drawing.player_name || 'Unknown'}</div>
+                <div class="artwork-prompt">"${drawing.prompt || ''}"</div>
             </div>
-        `;
+        </div>
+    `;
     }
 
-    // 顯示投票內鬼界面
+    // 顯示投票間諜界面
     generateSpyVotingInterface(players) {
         if (!players) return;
-        const spyVotingInterface = document.getElementById('spy-voting-interface');
+        const spyVotingInterface = document.getElementById('spy-voting-options');
         if (!spyVotingInterface) return;
-        spyVotingInterface.innerHTML = '';
 
-        // 過濾掉當前玩家
-        const otherPlayers = players.filter(player => player.id !== this.myPlayerId);
+        // 先移除舊的投票按鈕
+        document.querySelectorAll('.vote-spy-button').forEach(btn => btn.remove());
 
-        // 使用迴圈生成按鈕並綁定事件
-        for (const player of otherPlayers) {
-            const button = document.createElement('button');
-            button.className = 'vote-button';
-            button.dataset.playerId = player.id;
-            button.textContent = player.name || 'Unknown';
+        // 建立按鈕並存至陣列
+        const voteButtons = [];
+        for (let playerIndex = 0; playerIndex < players.length; playerIndex++) {
+            const player = players[playerIndex];
+            if (player.id === this.myPlayerId) continue;
+            const votePlayerButton = document.createElement('button');
+            votePlayerButton.className = 'vote-spy-button bounce-in';
+            votePlayerButton.textContent = '票他';
+            votePlayerButton.dataset.playerId = player.id;
+            voteButtons.push({
+                button: votePlayerButton,
+                playerId: player.id,
+                playerBlockId: `player${playerIndex + 1}`
+            });
+        }
 
-            // 綁定點擊事件
+        // 註冊事件
+        voteButtons.forEach(({
+            button,
+            playerId
+        }) => {
             button.addEventListener('click', () => {
                 if (window.submitVote) {
-                    window.submitVote(player.id);
+                    window.submitVote(playerId);
                 }
+                // 消滅所有按鈕
+                voteButtons.forEach(({
+                    button
+                }) => {
+                    button.className = 'vote-spy-button bounce-out';
+                });
+                setTimeout(() => {
+                    voteButtons.forEach(({
+                        button
+                    }) => button.remove());
+                }, 1000);
             });
+        });
 
-            spyVotingInterface.appendChild(button);
-        }
+        // 插入按鈕
+        voteButtons.forEach(({
+            button,
+            playerBlockId
+        }) => {
+            const playerBlock = document.getElementById(playerBlockId);
+            if (playerBlock) {
+                playerBlock.appendChild(button);
+            }
+        });
     }
 
-    generateVoteCountInterface(data) {
-        const voteCountInterface = document.getElementById('vote-count-interface');
-        if (!voteCountInterface || !data || !data.vote_counts) return;
-
-        voteCountInterface.innerHTML = '';
-
+    generateVoteCountDetail(data) {
         // 將物件轉換為陣列並迭代
         Object.entries(data.vote_counts).forEach(([playerId, votes]) => {
-            const player = this.players.find(p => p.id === playerId);
+            const playerIndex = this.players.findIndex(p => p.id === playerId);
+            const player = this.players[playerIndex];
             if (!player) return;
 
-            const row = document.createElement('div');
-            row.className = 'vote-result-row';
+            const playerBlock = document.getElementById(`player${playerIndex + 1}`);
+            if (!playerBlock) return;
+            const voteResultBar = document.createElement('div');
+            voteResultBar.className = 'vote-result-bar';
+            if ((playerIndex + 1) % 2 === 1) {
+                voteResultBar.classList.add('vote-result-L');
+            } else {
+                voteResultBar.classList.add('vote-result-R');
+            }
+            const voteCountNumber = document.createElement('div');
+            voteCountNumber.className = 'vote-count-number';
+            voteCountNumber.textContent = votes || 0;
 
-            const nameCell = document.createElement('div');
-            nameCell.className = 'vote-result-name';
-            nameCell.textContent = player.name || 'Unknown';
+            voteResultBar.appendChild(voteCountNumber);
 
-            const votesCell = document.createElement('div');
-            votesCell.className = 'vote-result-votes';
-            votesCell.textContent = `${votes || 0} 票`;
+            if (votes > 0) {
+                const voterList = document.createElement('div');
+                voterList.className = 'voter-list'; // Ensure voter-list class is always applied
+                if ((playerIndex + 1) % 2 === 1) {
+                    voterList.classList.add('vote-result-L');
+                } else if ((playerIndex + 1) % 2 === 0) {
+                    voterList.classList.add('vote-result-R');
+                }
+                data.vote_results[player.id].forEach(voterId => {
+                    const voter = this.players.find(p => p.id === voterId);
+                    const voteItem = document.createElement('div');
+                    voteItem.className = 'vote-item';
+                    const voterImage = document.createElement('img');
+                    voterImage.className = 'voter-image';
+                    voterImage.src = `../static/images/avatar/${voter?.avatar_id}.png`;
+                    voteItem.appendChild(voterImage);
+                    const voterName = document.createElement('div');
+                    voterName.className = 'voter-name';
+                    voterName.textContent = `${voter?.name || 'Unknown'}`;
+                    voteItem.appendChild(voterName);
+                    voterList.appendChild(voteItem);
+                });
+                setTimeout(() => {
+                    voteResultBar.appendChild(voterList);
+                }, this.timeBeforeShowVoteDetail);
+            }
+            playerBlock.appendChild(voteResultBar);
+        });
+    }
+    generateRealSpy(data) {
+        const body = document.body;
+        const gametableContainer = document.getElementById('gametable-container');
+        const realSpyInterface = document.getElementById('real-spy-interface');
 
-            row.appendChild(nameCell);
-            row.appendChild(votesCell);
-            voteCountInterface.appendChild(row);
+        body.classList.add('body-dark');
+        gametableContainer.classList.add('gametable-container-dark');
+
+        // 輪盤閃爍效果
+        this.startAvatarRoulette().then(() => {
+            // 創建新的提示元素
+            const realSpyTips = document.createElement('div');
+            realSpyTips.className = 'drawing-tips';
+            realSpyTips.id = 'real-spy-tips';
+
+            // 創建新的顯示區域元素
+            const realSpyDisplay = document.createElement('div');
+            realSpyDisplay.className = 'real-spy-display';
+            realSpyDisplay.id = 'realSpy-display';
+
+            // 創建新的橫幅元素
+            const realSpyBanner = document.createElement('div');
+            realSpyBanner.className = 'real-spy-banner';
+            realSpyBanner.id = 'realSpy-banner';
+
+            // 顯示真正的間諜
+            const spy = this.players.find(p => p.id === data.spy_is);
+            if (spy) {
+                body.classList.add('no-transition');
+                gametableContainer.classList.add('no-transition');
+                body.classList.remove('body-dark');
+                gametableContainer.classList.remove('gametable-container-dark');
+                const spyAvatar = document.createElement('img');
+                spyAvatar.src = `../static/images/avatar/${spy.avatar_id}.png`;
+                spyAvatar.className = 'real-spy-avatar';
+
+
+                if (data.guess_spy_correct === true) {
+                    realSpyTips.textContent = '間諜被大家識破了!';
+                    realSpyBanner.textContent = `${spy.name} 是間諜！`;
+                    spyAvatar.classList.add('bounce');
+                } else {
+                    realSpyTips.innerHTML = '間諜沒被識破！<br>取得了一半的勝利!';
+                    realSpyBanner.textContent = `${spy.name} 是間諜！`;
+                    spyAvatar.classList.add('flip');
+                    window.poof(5000);
+                }
+                realSpyDisplay.appendChild(spyAvatar);
+                // 將新元素添加到遊戲桌容器
+                realSpyInterface.appendChild(realSpyTips);
+                realSpyInterface.appendChild(realSpyDisplay);
+                realSpyInterface.appendChild(realSpyBanner);
+            }
+        });
+    }
+
+    // 輪盤閃爍頭像邊框效果
+    startAvatarRoulette() {
+        const avatars = document.querySelectorAll('.in-game-avatar-img');
+        if (!avatars.length) return Promise.resolve();
+
+        avatars.forEach(avatar => avatar.classList.remove('in-game-avatar-img-selected'));
+
+        let index = 0;
+        let delay = 500;
+        let minDelay = 120;
+        let duration = this.RouletteTime;
+        let delayStep = 60;
+        let step = 0;
+        // 依 delay 逐步遞減累加，直到總和超過 duration
+        let totalSteps = 0;
+        let tempDelay = delay;
+        let totalTime = 0;
+        while (totalTime < duration) {
+            totalTime += tempDelay;
+            totalSteps++;
+            if (tempDelay > minDelay) {
+                tempDelay -= delayStep;
+                if (tempDelay < minDelay) tempDelay = minDelay;
+            }
+        }
+
+        let prevIndex = null;
+        return new Promise(resolve => {
+            const highlightNext = () => {
+                if (prevIndex !== null) {
+                    avatars[prevIndex].classList.remove('in-game-avatar-img-selected');
+                }
+                avatars[index].classList.add('in-game-avatar-img-selected');
+                prevIndex = index;
+                index = (index + 1) % avatars.length;
+                step++;
+                if (delay > minDelay) {
+                    delay -= delayStep;
+                }
+                if (step < totalSteps) {
+                    setTimeout(highlightNext, delay);
+                } else {
+                    // 最後只高亮停在的那個
+                    avatars[prevIndex].classList.remove('in-game-avatar-img-selected');
+                    //avatars[(index + avatars.length - 1) % avatars.length].classList.add('in-game-avatar-img-selected');
+                    resolve();
+                }
+            };
+            highlightNext();
         });
     }
 
     generateSpyGuessInterface(data) {
-        const spyGuessInterface = document.getElementById('spy-guess-interface');
+        const spyGuessInterface = document.getElementById('spy-guess-options');
+        const spyGuessTips = document.getElementById('spy-guess-tips');
         if (!spyGuessInterface || !data) return;
 
         spyGuessInterface.innerHTML = '';
+        spyGuessTips.innerHTML = '';
+
+        const spy = this.players.find(p => p.id === data.spy_is);
+        if (data.guess_spy_correct === true) {
+            spyGuessTips.innerHTML = `${spy.name} 拙劣的演技未能說服大家！<br>但如果 ${spy.name} 猜對了關鍵字，將獲得逆轉勝`;
+        } else {
+            spyGuessTips.innerHTML = `${spy.name} 精湛的演技騙過了大家！<br>如果 ${spy.name} 猜對了關鍵字，將獲得完全勝利`;
+        }
 
         // 生成猜測選項
         const guessOptions = data.spy_options || [];
@@ -594,12 +886,15 @@ class RoomPage {
             optionElement.className = 'guess-option';
             optionElement.textContent = option;
 
-            // 綁定點擊事件
-            optionElement.addEventListener('click', () => {
-                if (data.spy_is == this.myPlayerId) {
-                    window.submitGuess(optionElement.textContent)
-                }
-            });
+            if (data.spy_is == this.myPlayerId) {
+                // 綁定點擊事件
+                optionElement.addEventListener('click', () => {
+                    if (window.submitGuess && !this.hasGuessedTopic) {
+                        window.submitGuess(optionElement.textContent);
+                    }
+                    this.hasGuessedTopic = true;
+                });
+            }
             spyGuessInterface.appendChild(optionElement);
         });
     }
@@ -611,46 +906,101 @@ class RoomPage {
         // 清空之前的內容
         spyGuessResultInterface.innerHTML = '';
 
-        const spyGuessResult = document.createElement('div');
-        spyGuessResult.className = 'spy-guess-result';
-        spyGuessResult.innerHTML = `
-            <p>內鬼的猜測答案：${data.spyGuess || '未知'}</p>
-            <p>真正的答案：${data.correctAnswer || '未知'}</p>
+        const guessResult = document.createElement('div');
+        guessResult.className = 'guess-result-block';
+        spyGuessResultInterface.appendChild(guessResult);
+
+        return new Promise((resolve) => {
+            // 建立 spy-guess-topic-display
+            const spyDiv = document.createElement('div');
+            spyDiv.className = 'spy-guess-topic-display bounce-in';
+            spyDiv.id = 'spy-guess-topic-display';
+            spyDiv.innerHTML = `
+            <span class="topic-label">間諜猜測</span>
+            <span class="topic-value">${data.spyGuess}</span>
         `;
-        spyGuessResultInterface.appendChild(spyGuessResult);
+            guessResult.appendChild(spyDiv);
+
+            // 使用 Promise 來處理延遲
+            const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+            const correctDiv = document.createElement('div');
+            correctDiv.className = 'spy-guess-topic-display bounce-in';
+            correctDiv.id = 'correct-topic-display';
+
+            const answerResultDiv = document.createElement('div');
+            answerResultDiv.className = 'answer-result bounce-in';
+            answerResultDiv.id = 'answer-result';
+
+            wait(this.timeBeforeShowRealTopic)
+                .then(() => {
+
+                    correctDiv.innerHTML = `
+                    <span class="topic-label">正確答案</span>
+                    <span class="topic-value">${data.correctAnswer}</span>
+                `;
+                    guessResult.appendChild(correctDiv);
+                    return wait(this.timeBeforeShowResult);
+                })
+                .then(() => {
+                    answerResultDiv.textContent = data.correct ? '正確!' : '錯誤!';
+                    spyGuessResultInterface.appendChild(answerResultDiv);
+                    return wait(this.timeBeforeCelebration);
+                }).then(() => {
+                    spyDiv.classList.add('bounce-out');
+                    correctDiv.classList.add('bounce-out');
+                    answerResultDiv.classList.add('bounce-out');
+                    return wait(this.cleanUpTime);
+                }).then(() => {
+                    spyGuessResultInterface.innerHTML = '';
+                    resolve();
+                });
+        });
 
 
     }
 
     generateGameResult(data) {
-        const gameResultInterface = document.getElementById('game-result-interface');
-        if (!gameResultInterface) return;
+        const playerCelebrateBlock = document.getElementById('player-celebrate-block');
+        const gameResultTips = document.getElementById('game-result-tips');
+        if (!playerCelebrateBlock) return;
         if (!data) return;
         // 清空之前的內容
-        gameResultInterface.innerHTML = '';
+        playerCelebrateBlock.innerHTML = '';
         let resultMessage = '';
         let winners = [];
 
         if (data.winType === 'commonVictory') {
-            // 平民獲勝，過濾掉內鬼
+            // 平民獲勝，過濾掉間諜
             winners = this.players.filter(player => player.id !== this.spyId);
-            resultMessage = '平民獲勝！獲勝玩家：' + winners.map(player => player.name).join(', ');
-        } else if (data.winType === 'spyBigWin' || data.winType === 'spyComeback') {
-            // 內鬼獲勝，找到內鬼
+            resultMessage = '畫家獲勝！';
+        } else {
+            // 間諜獲勝，找到間諜
             winners = this.players.filter(player => player.id === this.spyId);
             if (data.winType === 'spyBigWin') {
-                resultMessage = '內鬼大獲全勝！獲勝玩家：' + winners.map(player => player.name).join(', ');
+                resultMessage = '間諜大獲全勝！';
+            } else if (data.winType === 'spyComeback') {
+                resultMessage = '間諜逆轉勝！';
             } else {
-                resultMessage = '內鬼逆轉勝！獲勝玩家：' + winners.map(player => player.name).join(', ');
+                resultMessage = '間諜小勝！';
             }
         }
+        gameResultTips.textContent = resultMessage;
+        winners.forEach(winner => {
+            const winnerElement = document.createElement('div');
+            winnerElement.className = 'winner-avatar';
+            const img = document.createElement('img');
+            img.className = 'winner-avatar-img bounce';
+            img.src = `../static/images/avatar/${winner.avatar_id}.png`;
+            winnerElement.appendChild(img);
+            const nameDiv = document.createElement('div');
+            nameDiv.textContent = winner.name;
+            nameDiv.className = 'winner-name';
+            winnerElement.appendChild(nameDiv);
+            playerCelebrateBlock.appendChild(winnerElement);
+        });
 
-        const resultElement = document.createElement('div');
-        resultElement.className = 'game-result-message';
-        resultElement.textContent = resultMessage;
-
-        // 添加到界面
-        gameResultInterface.appendChild(resultElement);
+        gameResultTips.textContent = resultMessage;
     }
 
     generateGallery(data) {
@@ -660,10 +1010,9 @@ class RoomPage {
         // 清空之前的內容
         galleryContainer.innerHTML = '';
 
-        const followInterface = document.createElement('div');
-        followInterface.id = 'follow-interface';
-        followInterface.className = 'follow-interface';
-        galleryContainer.appendChild(followInterface);
+        const galleryItemContainer = document.createElement('div');
+        galleryItemContainer.className = 'gallery-item-container';
+
 
         // 生成畫廊項目
         data.forEach(item => {
@@ -677,106 +1026,128 @@ class RoomPage {
             mainItem.className = 'gallery-main-item-grid';
 
             item.gallery_data.forEach(submitted_data => {
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'gallery-main-img-container';
+
+                const imgFrame = document.createElement('img');
+                imgFrame.src = "../static/images/frame/default.png";
+                imgFrame.className = 'gallery-main-img-frame';
+
                 const img = document.createElement('img');
                 img.src = `data:image/png;base64,${submitted_data.image_data[submitted_data.selectedImage]}`;
-                img.alt = `${item.player_name || '未知玩家'}的作品`;
-                img.className = 'gallery-main-item';
-                mainItem.appendChild(img);
+                img.className = 'gallery-main-img';
+
+                imgContainer.appendChild(imgFrame);
+                imgContainer.appendChild(img);
+                mainItem.appendChild(imgContainer);
 
                 const fi = document.getElementById('follow-interface');
-                const OFFSET = 8; // 與滑鼠的間距
 
-
-                img.addEventListener('mouseenter', (e) => {
+                imgFrame.addEventListener('mouseenter', (e) => {
                     fi.innerHTML = ''; // 清空內容
-
                     const promptDiv = document.createElement('div');
                     promptDiv.className = 'follow-prompt';
-                    promptDiv.textContent = `提詞: ${submitted_data.prompt || '未知'}`;
+                    promptDiv.textContent = submitted_data.prompt;
                     fi.appendChild(promptDiv);
 
-                    const noneSelectImgDiv = document.createElement('div');
-                    noneSelectImgDiv.className = 'noneSelectImg';
+                    const fiImgContainer = document.createElement('div');
+                    fiImgContainer.className = 'follow-img-container';
 
-                    submitted_data.image_data
-                        .filter((image, index) => index !== submitted_data.selectedImage)
-                        .forEach(image => {
+                    const fiMainImgContainer = document.createElement('div');
+                    fiMainImgContainer.className = 'follow-main-img-container';
+                    const fiMainImg = document.createElement('img');
+                    fiMainImg.className = 'follow-main-img';
+                    fiMainImg.src = `data:image/png;base64,${submitted_data.image_data[submitted_data.selectedImage]}`;
+                    fiMainImgContainer.appendChild(fiMainImg);
+
+                    const fiMainImgFrame = document.createElement('img');
+                    fiMainImgFrame.className = 'follow-main-img-frame';
+                    fiMainImgFrame.src = "../static/images/frame/default.png";
+                    fiMainImgContainer.appendChild(fiMainImgFrame);
+
+                    fiImgContainer.appendChild(fiMainImgContainer);
+
+                    const noneSelectImgDiv = document.createElement('div');
+                    noneSelectImgDiv.className = 'none-select-img-Div';
+
+                    for (let index = 0; index < submitted_data.image_data.length; index++) {
+                        if (index !== submitted_data.selectedImage) {
+                            const noneSelectImgcontainer = document.createElement('div');
+                            noneSelectImgcontainer.className = 'none-select-img-container';
+
+                            const noneSelectImgFrame = document.createElement('img');
+                            noneSelectImgFrame.className = 'none-select-img-frame';
+                            noneSelectImgFrame.src = "../static/images/frame/default.png";
+                            noneSelectImgcontainer.appendChild(noneSelectImgFrame);
+
                             const img = document.createElement('img');
-                            img.src = `data:image/png;base64,${image || ''}`;
-                            img.alt = '未選擇的畫作';
-                            noneSelectImgDiv.appendChild(img);
-                        });
-                    fi.appendChild(noneSelectImgDiv);
+                            img.className = 'none-select-img';
+                            img.src = `data:image/png;base64,${submitted_data.image_data[index] || ''}`;
+                            noneSelectImgcontainer.appendChild(img);
+
+                            noneSelectImgDiv.appendChild(noneSelectImgcontainer);
+                        }
+                    }
+                    fiImgContainer.appendChild(noneSelectImgDiv);
+                    fi.appendChild(fiImgContainer);
                 });
 
-                img.addEventListener('mousemove', (e) => {
+                imgFrame.addEventListener('mousemove', (e) => {
                     const x = e.clientX;
                     const y = e.clientY;
                     const ww = window.innerWidth;
                     const wh = window.innerHeight;
 
                     // 取得視窗中實際渲染尺寸
-                    fi.style.display = 'block'; // 必須先顯示才能取得尺寸
-                    const rect = fi.getBoundingClientRect();
-                    const fiWidth = rect.width;
-                    const fiHeight = rect.height;
+                    const fiWidth = getComputedStyle(fi).width.replace('px', '');
+                    const fiHeight = getComputedStyle(fi).height.replace('px', '');
 
-                    let left = x < ww / 2 ? (x + OFFSET) : (x - fiWidth - OFFSET);
-                    let top = y < wh / 2 ? (y + OFFSET) : (y - fiHeight - OFFSET);
+                    const fiScaleWidth = window.scaleFactor * fiWidth;
+                    const fiScaleHeight = window.scaleFactor * fiHeight;
 
-                    // 邊界偵測：避免跑出 viewport
-                    left = Math.min(Math.max(left, 0), ww - fiWidth);
-                    top = Math.min(Math.max(top, 0), wh - fiHeight);
+                    let OFFSET = 20 * window.scaleFactor; // 與滑鼠的間距
 
+
+                    // 根據滑鼠位置決定顯示方向
+                    let left = x + OFFSET;
+                    let top = y + OFFSET;
+
+                    // 如果右邊超出螢幕，則顯示在左邊
+                    if (left + fiScaleWidth > ww) {
+                        left = x - fiScaleWidth - OFFSET;
+                    }
+                    // 如果左邊超出螢幕，則顯示在右邊
+                    if (left < 0) {
+                        left = x + OFFSET;
+                    }
+
+                    // 如果下方超出螢幕，則顯示在上方
+                    if (top + fiScaleHeight > wh) {
+                        top = y - fiScaleHeight - OFFSET;
+                    }
+                    // 如果上方超出螢幕，則顯示在下方
+                    if (top < 0) {
+                        top = y + OFFSET;
+                    }
+
+                    fi.style.transform = `scale(${window.scaleFactor})`;
                     fi.style.left = `${left}px`;
                     fi.style.top = `${top}px`;
+                    fi.style.display = 'flex';
+                    console.log(`x: ${x}, y: ${y}, ww: ${ww}, wh: ${wh}, fiWidth: ${fiWidth}, fiHeight: ${fiHeight}`, fiScaleWidth, fiScaleHeight);
                 });
 
-                img.addEventListener('mouseleave', () => {
+                imgFrame.addEventListener('mouseleave', () => {
                     fi.style.display = 'none';
                 });
             });
 
-            itemElement.appendChild(header);
             itemElement.appendChild(mainItem);
+            itemElement.appendChild(header);
 
-            galleryContainer.appendChild(itemElement);
+            galleryItemContainer.appendChild(itemElement);
         });
-    }
-
-    showFollowInterface(event, item) {
-        let followInterface = document.getElementById('follow-interface');
-
-        // 如果介面不存在，創建一個
-        if (!followInterface) {
-            followInterface = document.createElement('div');
-            followInterface.id = 'follow-interface';
-            followInterface.className = 'follow-interface';
-            document.body.appendChild(followInterface);
-        }
-
-        // 設定內容
-        followInterface.innerHTML = `
-            <div class="follow-prompt">提詞: ${item.prompt || '未知'}</div>
-            <div class="follow-selected">
-                <img src="${item.selectedImage || ''}" alt="選擇的畫作">
-            </div>
-            <div class="follow-other">
-                ${item.image_data.map(image => `<img src="${image}" alt="未選擇的畫作">`).join('')}
-            </div>
-        `;
-
-        // 設定位置
-        followInterface.style.top = `${event.clientY + 10}px`;
-        followInterface.style.left = `${event.clientX + 10}px`;
-        followInterface.style.display = 'block';
-    }
-
-    hideFollowInterface() {
-        const followInterface = document.getElementById('follow-interface');
-        if (followInterface) {
-            followInterface.style.display = 'none';
-        }
+        galleryContainer.appendChild(galleryItemContainer);
     }
 
     // 開始投票倒數
@@ -807,7 +1178,7 @@ class RoomPage {
             }
         );
     }
-    // 顯示內鬼猜測界面
+    // 顯示間諜猜測界面
     showSpyGuessInterface(options) {
         this.hideAllInterfaces();
         const spyGuessInterface = document.getElementById('spy-guess-interface');
@@ -826,10 +1197,10 @@ class RoomPage {
     // 建立猜測選項
     createGuessOption(option) {
         return `
-            <div class="guess-option" data-option="${option || ''}">
-                ${option || ''}
-            </div>
-        `;
+        <div class="guess-option" data-option="${option || ''}">
+            ${option || ''}
+        </div>
+    `;
     }
 
 
@@ -885,38 +1256,6 @@ class RoomPage {
         window.socketClient.submitDrawingPrompt(prompt);
     }
 
-    // 顯示頭像選擇
-    showAvatarSelection() {
-        this.generateAvatarOptions();
-        if (window.showAvatarModal) {
-            window.showAvatarModal();
-        }
-    }
-
-    // 生成頭像選項
-    generateAvatarOptions() {
-        const avatarGrid = document.getElementById('avatar-grid');
-        if (!avatarGrid) return;
-
-        const avatars = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃'];
-
-        avatarGrid.innerHTML = avatars.map((emoji, index) => `
-            <div class="avatar-option" data-avatar-id="${index + 1}">
-                ${emoji}
-            </div>
-        `).join('');
-    }
-
-    // 選擇頭像
-    selectAvatar(option) {
-        if (!option) return;
-
-        document.querySelectorAll('.avatar-option').forEach(opt =>
-            opt.classList.remove('selected'));
-
-        option.classList.add('selected');
-        this.selectedAvatar = option.dataset.avatarId;
-    }
 
     // 確認頭像更換
     confirmAvatarChange() {

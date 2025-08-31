@@ -3,14 +3,30 @@ class HomePage {
     constructor() {
         this.statsInterval = null;
         this.activeRoomsInterval = null;
+        this.container = [
+            'homepage-container',
+            'room-container',
+            'gametable-container',
+            'gallery-container'
+        ]
         this.init();
     }
 
     init() {
+        this.showContainer('homepage-container');
         this.setupEventListeners();
         this.startStatsUpdate();
         this.setupFormValidation();
         this.initAnimations();
+    }
+
+    showContainer(containerName) {
+        this.container.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = (id === containerName) ? 'flex' : 'none';
+            }
+        });
     }
 
     // 設定事件監聽器

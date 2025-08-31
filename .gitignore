@@ -5,3 +5,5 @@ __pycache__/
 *.ipynb
 *.bkp
 *.dtmp
+*.crt
+*.key

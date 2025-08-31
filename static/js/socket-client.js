@@ -108,11 +108,16 @@ class SocketClient {
             this.emit('avatarChanged', data);
         });
 
+        this.socket.on('start_voting_topic', (data) => {
+            console.log('開始投票主題:', data);
+            if (window.roomPage) {
+                window.roomPage.handleStartVotingTopic(data);
+            }
+        });
+
         // 遊戲相關事件
         this.socket.on('game_started', (data) => {
             console.log('遊戲開始:', data);
-            this.emit('gameStarted', data);
-
             if (window.playGameSound) {
                 window.playGameSound.gameStarted();
             }
@@ -257,7 +262,7 @@ class SocketClient {
     }
 
     startGame() {
-        this.send('start_game');
+        this.send('topic_vote_start');
     }
 
     submitDrawingPrompt(prompt) {
@@ -301,6 +306,11 @@ window.socketClient = new SocketClient();
 window.startGame = () => {
     window.socketClient.startGame();
 };
+window.submitSelectedTopic = (topicId) => {
+    window.socketClient.send('topic_voted', {
+        'selected_topic_no': topicId
+    });
+}
 
 window.submitDrawingPrompt = (prompt) => {
     window.socketClient.submitDrawingPrompt(prompt);
@@ -359,6 +369,9 @@ document.addEventListener('wheel', function (e) {
     passive: false
 });
 
+// Declare scaleFactor globally
+window.scaleFactor = 1;
+
 function updateAutoScale() {
     const container = document.getElementById('js-scale');
     // 1. 獲取當前視窗尺寸
@@ -371,9 +384,11 @@ function updateAutoScale() {
 
     // 3. 選擇較小比例（確保完全可見）
     const scale = Math.min(scaleX, scaleY) * 0.95; // 留 5% 邊距
-
+    window.scaleFactor = scale; // Declare and assign scaleFactor
     // 4. 應用縮放（關鍵！）
     container.style.transform = `scale(${scale})`;
+    window.scaleFactor = scale;
+
 }
 
 // 5. 監聽視窗變化
