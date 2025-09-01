@@ -22,11 +22,11 @@ class GameUtils {
     static showError(message) {
         const toast = document.getElementById('error-toast');
         const messageEl = document.getElementById('error-message');
-        
+
         if (toast && messageEl) {
             messageEl.textContent = message;
             toast.classList.add('show');
-            
+
             // 5秒後自動隱藏
             setTimeout(() => {
                 this.hideError();
@@ -46,11 +46,11 @@ class GameUtils {
     static showSuccess(message) {
         const toast = document.getElementById('success-toast');
         const messageEl = document.getElementById('success-message');
-        
+
         if (toast && messageEl) {
             messageEl.textContent = message;
             toast.classList.add('show');
-            
+
             // 3秒後自動隱藏
             setTimeout(() => {
                 this.hideSuccess();
@@ -97,11 +97,11 @@ class GameUtils {
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-            
+
             try {
                 const successful = document.execCommand('copy');
                 document.body.removeChild(textArea);
-                
+
                 if (successful) {
                     this.showSuccess('已複製到剪貼板！');
                     return true;
@@ -109,7 +109,7 @@ class GameUtils {
             } catch (err) {
                 document.body.removeChild(textArea);
             }
-            
+
             this.showError('複製失敗，請手動複製');
             return false;
         }
@@ -125,19 +125,19 @@ class GameUtils {
     // 倒數計時器
     static createCountdown(duration, callback, tickCallback = null) {
         let timeLeft = duration;
-        
+
         const tick = () => {
             if (tickCallback) tickCallback(timeLeft);
-            
+
             if (timeLeft <= 0) {
                 if (callback) callback();
                 return;
             }
-            
+
             timeLeft--;
             setTimeout(tick, 1000);
         };
-        
+
         tick();
     }
 
@@ -177,7 +177,7 @@ class GameUtils {
     // 節流函數
     static throttle(func, limit) {
         let inThrottle;
-        return function(...args) {
+        return function (...args) {
             if (!inThrottle) {
                 func.apply(this, args);
                 inThrottle = true;
@@ -221,7 +221,7 @@ class GameUtils {
     // 動畫元素進入視窗
     static animateOnScroll() {
         const elements = document.querySelectorAll('[data-animate]');
-        
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -243,7 +243,7 @@ class GameUtils {
     // 圖片延遲載入
     static lazyLoadImages() {
         const images = document.querySelectorAll('img[data-src]');
-        
+
         const imageObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -339,16 +339,16 @@ class GameUtils {
         currentRoom: null,
         currentPlayer: null,
         gamePhase: 'waiting',
-        
+
         setState(key, value) {
             this[key] = value;
             this.saveToStorage();
         },
-        
+
         getState(key) {
             return this[key];
         },
-        
+
         saveToStorage() {
             GameUtils.storage.set('gameState', {
                 currentRoom: this.currentRoom,
@@ -356,14 +356,14 @@ class GameUtils {
                 gamePhase: this.gamePhase
             });
         },
-        
+
         loadFromStorage() {
             const saved = GameUtils.storage.get('gameState');
             if (saved) {
                 Object.assign(this, saved);
             }
         },
-        
+
         clear() {
             this.currentRoom = null;
             this.currentPlayer = null;
@@ -375,11 +375,11 @@ class GameUtils {
     // 音效相關
     static audio = {
         enabled: GameUtils.storage.get('audioEnabled', true),
-        
+
         toggle() {
             this.enabled = !this.enabled;
             GameUtils.storage.set('audioEnabled', this.enabled);
-            
+
             // 更新按鈕狀態
             const button = document.getElementById('sound-toggle');
             if (button) {
@@ -390,10 +390,10 @@ class GameUtils {
                 button.classList.toggle('muted', !this.enabled);
             }
         },
-        
+
         play(soundName) {
             if (!this.enabled) return;
-            
+
             // 這裡可以添加實際的音效播放邏輯
             console.log(`Playing sound: ${soundName}`);
         }
@@ -433,7 +433,7 @@ window.toggleSound = () => GameUtils.audio.toggle();
 // 初始化遊戲狀態
 document.addEventListener('DOMContentLoaded', () => {
     GameUtils.gameState.loadFromStorage();
-    
+
     // 設定音效按鈕狀態
     const soundButton = document.getElementById('sound-toggle');
     if (soundButton) {
@@ -460,7 +460,7 @@ document.addEventListener('keydown', (e) => {
         });
         document.body.style.overflow = '';
     }
-    
+
     // M 切換音效
     if (e.key.toLowerCase() === 'm' && !e.target.matches('input, textarea')) {
         GameUtils.audio.toggle();

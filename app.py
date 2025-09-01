@@ -1,7 +1,7 @@
 import time
 import threading
 from threading import Timer
-from flask import Flask, render_template, request, jsonify, session, Response
+from flask import Flask, render_template, request, jsonify, session, Response, abort
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import uuid
 import random
@@ -14,6 +14,7 @@ import json
 import logging
 import base64
 import secrets
+from markupsafe import escape
 
 # 配置上傳設定
 UPLOAD_FOLDER = 'art_output'
@@ -79,6 +80,11 @@ except json.JSONDecodeError as e:
 
 
 @app.route('/')
+def root():
+    abort(404)
+
+
+@app.route('/playgame')
 def index():
     """遊戲主頁面"""
     return render_template('index.html')
@@ -92,6 +98,8 @@ def allowed_file(filename):
 
 @app.route('/debug/rooms')
 def debug_rooms():
+    if request.remote_addr != '127.0.0.1':
+        abort(404)
     """調試：顯示所有房間狀態"""
     try:
         logger.info(f'調試請求: 檢查房間狀態')
@@ -117,6 +125,7 @@ def debug_rooms():
             })
 
         response = {
+            'current_time': datetime.now().isoformat(),
             'total_rooms': len(rooms_info),
             'rooms': rooms_info,
             'game_manager_type': str(type(game_manager)),
@@ -135,17 +144,75 @@ def debug_rooms():
         })
 
 
-@app.errorhandler(404)
-def not_found(error):
-    """404 錯誤處理"""
-    return render_template('index.html'), 404
+@app.route('/upload', methods=['POST'])
+def upload_images():
+    if request.remote_addr != '127.0.0.1':
+        abort(404)
+    try:
+        print(request.headers)
+        # 檢查是否有檔案在請求中
+        if 'files' not in request.files:
+            return jsonify({
+                'success': False,
+                'message': '沒有找到檔案，請使用 "files" 作為檔案欄位名稱'
+            }), 400
 
+        files = request.files.getlist('files')
 
-@app.errorhandler(500)
-def internal_error(error):
-    """500 錯誤處理"""
-    logger.error(f"Internal server error: {error}")
-    return render_template('index.html'), 500
+        # 檢查是否有選擇檔案
+        if not files or all(file.filename == '' for file in files):
+            return jsonify({
+                'success': False,
+                'message': '沒有選擇檔案'
+            }), 400
+        room_id = request.headers.get('room', 'no_room')
+        player_id = request.headers.get('player', 'no_player')
+        round_number = request.headers.get('round', 'no_round')
+        room = game_manager.get_room(room_id)
+
+        player = room.get_player(player_id)
+        if not player:
+            emit('error', {'message': '玩家不存在'})
+            return
+        last_submitted_data = player.submitted_data[-1]
+        assert str(last_submitted_data.round) == str(
+            round_number), "提交的回合數與當前回合數不一致"
+        fileNo = 0
+        for file in files:
+            if file.filename == '':
+                continue
+            try:
+                file_data = base64.b64encode(file.read()).decode('utf-8')
+                last_submitted_data.image_data.append(file_data)
+                fileNo += 1
+            except Exception as e:
+                logger.info(f'檔案上傳失敗: , 錯誤: {str(e)}')
+        logger.info(f'檔案上傳成功: {fileNo} 個檔案已上傳')
+        # 根據成功比例決定 HTTP 狀態碼
+        if fileNo < len(files):
+            return jsonify({
+                'success': False,
+                'message': '部分檔案未成功上傳'
+            }), 400
+        elif fileNo == len(files):
+            last_submitted_data.isDrawFinished = True
+            allDrawFinish = room.check_all_drawing_finished(int(round_number))
+            if allDrawFinish:
+                socketio.emit('drawing_finished', {
+                    'room_id': room_id,
+                    'round': round_number,
+                    'players': [p.to_dict() for p in room.players]
+                }, room=room_id)
+            return jsonify({
+                'success': True,
+                'message': '所有檔案上傳成功'
+            }), 200
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'上傳失敗: {str(e)}'
+        }), 500
 
 
 #  添加錯誤處理器來處理 SocketIO 連接錯誤
@@ -217,7 +284,7 @@ def handle_disconnect():
 def handle_create_room(data):
     """建立遊戲房間"""
     try:
-        player_name = data.get('player_name', '匿名玩家').strip()
+        player_name = escape(data.get('player_name', '匿名玩家').strip())
 
         logger.info(f'收到建立房間請求: player_name={player_name}')
         logger.info(f'請求數據: {data}')
@@ -278,7 +345,7 @@ def handle_join_room(data):
     """加入遊戲房間"""
     try:
         room_id = data.get('room_id', '').strip().upper()
-        player_name = data.get('player_name', '').strip()
+        player_name = escape(data.get('player_name', '').strip())
 
         logger.info(f'嘗試加入房間: room_id={room_id}, player_name={player_name}')
         logger.info(f'當前所有房間: {list(game_manager.rooms.keys())}')
@@ -496,7 +563,7 @@ def handle_submit_drawing_prompt(data):
     try:
         room_id = session.get('room_id')
         player_id = session.get('player_id')
-        prompt = data.get('prompt', '').strip()
+        prompt = escape(data.get('prompt', '').strip())
 
         room = game_manager.get_room(room_id)
         if not room or room.phaseName[room.phase] != 'drawing':
@@ -544,6 +611,9 @@ def handle_submit_drawing_prompt(data):
 
 @app.route('/upload', methods=['POST'])
 def upload_images():
+    if request.remote_addr != '127.0.0.1':
+        abort(404)
+        return ''
     try:
         print(request.headers)
         # 檢查是否有檔案在請求中
@@ -578,25 +648,6 @@ def upload_images():
             if file.filename == '':
                 continue
             try:
-                # original_filename = file.filename
-                # # 產生唯一檔案名稱（加上時間戳記和UUID）
-                # file_extension = original_filename.rsplit('.', 1)[1].lower()
-                # new_filename = os.path.join(
-                #     room_id, round_number, f"{player}_{fileNo}.{file_extension}")
-
-                # # 檢查 roomId 資料夾是否存在，若不存在則建立
-                # room_folder = os.path.join(app.config['UPLOAD_FOLDER'], room_id)
-                # if not os.path.exists(room_folder):
-                #     os.makedirs(room_folder)
-                # # 檢查 round 資料夾是否存在，若不存在則建立
-                # round_folder = os.path.join(room_folder, round_number)
-                # if not os.path.exists(round_folder):
-                #     os.makedirs(round_folder)
-                # # 儲存檔案
-                # file_path = os.path.join(
-                #     app.config['UPLOAD_FOLDER'], new_filename)
-                # file.save(file_path)
-                # fileNo += 1  # Increment file number for unique filenames
                 file_data = base64.b64encode(file.read()).decode('utf-8')
                 last_submitted_data.image_data.append(file_data)
                 fileNo += 1
@@ -1102,17 +1153,6 @@ cleanup_thread = threading.Thread(target=cleanup_rooms, daemon=True)
 cleanup_thread.start()
 
 
-#  添加健康檢查端點
-@app.route('/health')
-def health_check():
-    """健康檢查端點"""
-    return jsonify({
-        'status': 'healthy',
-        'rooms': len(game_manager.rooms),
-        'timestamp': datetime.now().isoformat()
-    })
-
-
 if __name__ == '__main__':
     logger.info('伺服器啟動中...')
     logger.info(f'ComfyUI 客戶端類型: {type(comfy_client).__name__}')
@@ -1122,10 +1162,11 @@ if __name__ == '__main__':
         socketio.run(
             app,
             debug=True,  # 在生產環境中關閉 debug
-            host='0.0.0.0',
-            port=5000,
+            host='127.0.0.1',
+            port=5566,
             log_output=True,
-            allow_unsafe_werkzeug=True
+            allow_unsafe_werkzeug=True,
+            certfile='server.crt', keyfile='server.key'
         )
     except Exception as e:
         logger.error(f'伺服器啟動失敗: {e}', exc_info=True)
