@@ -33,6 +33,10 @@
     -ms-touch-action: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    -ms-user-drag: none;
+    user-drag: none;
 }
 
 .selectable {
@@ -94,9 +98,19 @@
 }
 
 .homepage-title {
-    font-size: 60px;
+    font-size: 25px;
 
-    color: var(--text-primary);
+    margin-top: 100px;
+
+    color: var(--focus-color);
+}
+
+.homepage-title-img {
+    position: absolute;
+    top: 0;
+
+    width: 500px;
+    height: auto;
 }
 
 p {
@@ -212,6 +226,31 @@ p {
     height: 50%;
 }
 
+.create-join-room-container {
+    display: flex;
+    align-items: flex-end;
+
+    height: 160px;
+
+    gap: 50px;
+}
+
+.or-divider {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+
+    height: 100%;
+}
+
+.or-bar {
+    width: 2px;
+    height: 100%;
+
+    background-color: var(--text-primary);
+}
+
 .room-action {
     display: flex;
     align-items: center;
@@ -225,7 +264,7 @@ p {
     line-height: 27px;
 
     width: 190px;
-    margin: 5%;
+    margin-bottom: 10%;
     padding: 6px;
 
     transition: ease 0.25s;
@@ -1068,28 +1107,36 @@ p {
 
 
 .room-title {
-    font-size: 2rem;
+    font-size: 35px;
     font-weight: 500;
 
     display: flex;
     align-items: center;
     flex-wrap: wrap;
 
+    height: 55px;
     margin-bottom: 10px;
 
     gap: 12px;
 }
 
+.room-code {
+    padding: 0 6px;
+
+    border-radius: 5px;
+}
+
 .copy-btn {
-    padding: 8px 12px;
+    font-size: 35px;
+
+    padding: 3px 3px;
 
     cursor: pointer;
     transition: all 0.2s ease;
 
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: none;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
 }
 
 .copy-btn:hover {
@@ -1140,10 +1187,9 @@ p {
 .room-actions {
     display: flex;
     flex-direction: row;
-    /* 增加間隔 */
     justify-content: center;
 
-    gap: 24px;
+    gap: 120px;
 }
 
 /* 等待區域 */
@@ -1710,7 +1756,7 @@ p {
 .gallery-container {
     align-content: center;
     align-items: center;
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: wrap;
     justify-content: center;
 
@@ -1726,7 +1772,28 @@ p {
     background-blend-mode: hard-light;
 }
 
-.gallery-item-container {
+.gallery-header {
+    width: 490px;
+    margin-bottom: 20px;
+
+    border-radius: 5px;
+    background-image: url(../images/brassBg.png);
+    background-size: 580px;
+}
+
+.gallery-title {
+    font-family: 'Noto Sans TC';
+    font-size: 70px;
+    line-height: 110px;
+
+    height: 110px;
+
+    text-align: center;
+
+    color: var(--text-artistic);
+}
+
+.gallery-mid-content {
     display: flex;
     align-content: center;
     align-items: center;
@@ -1734,7 +1801,54 @@ p {
     flex-wrap: wrap;
 
     max-width: 1760px;
+    height: 55%;
+}
+
+.gallery-footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    width: 100%;
+    ;
+}
+
+.gallery-player-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
     height: 100%;
+}
+
+.gallery-player-status-item {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+
+    width: 80px;
+    height: 110px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+}
+
+.player-status-img {
+    width: 80px;
+    height: 80px;
+
+    border: 3px white solid;
+    border-radius: 50%;
+
+    object-fit: cover;
+}
+
+.player-status-symbol {
+    font-size: 20px;
+    line-height: 30px;
+
+    height: 30px;
 }
 
 .gallery-item {

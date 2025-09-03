@@ -100,6 +100,45 @@
     }
 }
 
+@keyframes gelatine {
+    0% {
+        transform: scale(1, 1);
+    }
+
+    2.5% {
+        transform: scale(0.9, 1.1);
+    }
+
+    5% {
+        transform: scale(1.1, 0.9);
+    }
+
+    7.5% {
+        transform: scale(0.95, 1.05);
+    }
+
+    10% {
+        transform: scale(1, 1);
+    }
+
+    /* 動畫結束回復 */
+    100% {
+        transform: scale(1, 1);
+    }
+
+    /* 直到下一次循環都靜止 */
+}
+
+@keyframes high-light {
+    0% {
+        background-color: var(--focus-color);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
+
 @keyframes fadeIn {
     from {
         transform: translateY(20px);
@@ -302,6 +341,14 @@
 
 .bounce {
     animation: bounce 2s ease infinite;
+}
+
+.gelatine {
+    animation: gelatine 2s infinite;
+}
+
+.high-light {
+    animation: high-light 1s ease-out forwards;
 }
 
 .animate-fadeIn {

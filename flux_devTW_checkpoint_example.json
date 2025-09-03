@@ -60,7 +60,7 @@
   "31": {
     "inputs": {
       "seed": 433221832992029,
-      "steps": 5,
+      "steps": 10,
       "cfg": 1,
       "sampler_name": "euler",
       "scheduler": "beta",
@@ -202,7 +202,7 @@
   },
   "54": {
     "inputs": {
-      "url": "http://127.0.0.1:5000/upload",
+      "url": "https://127.0.0.1:5566/upload",
       "method_type": "post",
       "request_field_name": "files",
       "images": [
@@ -315,36 +315,6 @@
     "class_type": "PrimitiveString",
     "_meta": {
       "title": "round"
-    }
-  },
-  "70": {
-    "inputs": {
-      "output_path": "C:\\Users\\minis\\OneDrive\\桌面\\Aii\\art_output",
-      "filename_prefix": [
-        "72",
-        0
-      ],
-      "filename_delimiter": "_",
-      "filename_number_padding": 4,
-      "filename_number_start": "false",
-      "extension": "png",
-      "dpi": 300,
-      "quality": 100,
-      "optimize_image": "true",
-      "lossless_webp": "false",
-      "overwrite_mode": "false",
-      "show_history": "false",
-      "show_history_by_prefix": "true",
-      "embed_workflow": "true",
-      "show_previews": "true",
-      "images": [
-        "8",
-        0
-      ]
-    },
-    "class_type": "Image Save",
-    "_meta": {
-      "title": "Image Save"
     }
   },
   "72": {

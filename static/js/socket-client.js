@@ -9,6 +9,8 @@ class SocketClient {
         this.eventHandlers = new Map();
         this.roomId = null;
         this.playerId = null;
+        this.hasChooseImg = false;
+
     }
 
     // 連接到伺服器
@@ -159,11 +161,16 @@ class SocketClient {
         });
         this.socket.on('game_ended', (data) => {
             console.log('遊戲結束:', data);
+            const play_again_btn = document.getElementById('play-again-btn');
+            play_again_btn.disabled = false;
             if (window.playGameSound) {
                 const isVictory = data.winner === 'citizens' ? !data.spy_name : data.spy_name;
                 window.playGameSound.gameEnded(isVictory);
             }
             window.roomPage.handleGameEnded(data);
+        });
+        this.socket.on('player_play_again', (data) => {
+            window.roomPage.readyToPlayAgain(data.player_id);
         });
 
         // 錯誤處理
@@ -344,7 +351,14 @@ window.changeAvatar = (avatarId) => {
 window.leaveRoom = () => {
     window.socketClient.send('leave_room', {});
     window.socketClient.disconnect();
-    window.location.href = '/';
+    window.location.href = '/playgame';
+};
+
+window.playAgain = () => {
+    const play_again_btn = document.getElementById('play-again-btn');
+    play_again_btn.disabled = true;
+    window.socketClient.send('play_again', {});
+    window.roomPage.readyToPlayAgain(window.socketClient.playerId);
 };
 
 window.copyRoomCode = () => {
@@ -353,6 +367,9 @@ window.copyRoomCode = () => {
     if (roomCode) {
         GameUtils.copyToClipboard(roomCode);
     }
+    roomCodeEl.style.animation = 'none';
+    roomCodeEl.offsetHeight; /* trigger reflow */
+    roomCodeEl.style.animation = null;
 };
 
 // 自動連接

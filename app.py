@@ -144,6 +144,13 @@ def debug_rooms():
         })
 
 
+@app.before_request
+def reject_http_except():
+    # 檢查是否為非 HTTPS 請求
+    if not request.is_secure:
+        abort(400)
+
+
 @app.route('/upload', methods=['POST'])
 def upload_images():
     if request.remote_addr != '127.0.0.1':
@@ -484,6 +491,27 @@ def handle_start_game(data=None):
         #     'round': room.current_round,
         #     'players': [p.to_dict() for p in room.players]
         # }, room=room_id)
+
+        # debug直接跳到藝廊階段
+        # 打包每個玩家的繪圖資料
+        # gallery_data = [
+        #     {
+        #         'player_name': p.name,
+        #         'gallery_data': [data.pack_for_gallery() for data in p.submitted_data]
+        #     }
+        #     for p in room.players
+        # ]
+        # logger.info(f'遊戲結束，打包畫廊資料')
+
+        # # 發送畫廊資料給所有玩家
+        # socketio.emit('game_ended', {
+        #     'winType': "spyComeback",
+        #     'correctAnswer': room.keyword,
+        #     'spyGuess': "test",
+        #     'correct': True,
+        #     'gallery': gallery_data
+        # }, room=room_id)
+        # room.phase += 1
 
     except Exception as e:
         logger.error(f'開始遊戲錯誤: {e}')
@@ -1043,6 +1071,7 @@ def handle_leave_room(data=None):
                 leave_room(room_id)
                 socketio.emit('player_left', {
                     'player_name': player_name,
+                    'player_id': player_id,
                     'players': [p.to_dict() for p in current_room.players]
                 }, room=room_id)
 
@@ -1057,6 +1086,36 @@ def handle_leave_room(data=None):
     except Exception as e:
         logger.error(f'離開房間錯誤: {e}', exc_info=True)
         emit('error', {'message': '離開房間失敗'})
+
+
+@socketio.on('play_again')
+def handle_play_again(data=None):
+    """玩家準備再次遊玩"""
+    try:
+        room_id = session.get('room_id')
+        player_id = session.get('player_id')
+
+        if not room_id or not player_id:
+            emit('error', {'message': '未在任何房間中'})
+            return
+
+        room = game_manager.get_room(room_id)
+        if not room:
+            emit('error', {'message': '房間不存在'})
+            return
+
+        player = room.get_player(player_id)
+        if not player:
+            emit('error', {'message': '玩家不在此房間中'})
+            return
+
+        # 通知房間內所有玩家
+        socketio.emit('player_play_again', {
+            'player_id': player_id
+        }, room=room_id)
+
+    except Exception as e:
+        logger.error(f'玩家準備再次遊玩錯誤: {e}', exc_info=True)
 
 
 # 定期清理空房間和過期房間

@@ -143,7 +143,6 @@ class Room:
 
         # 隨機選擇一名玩家作為間諜
         spy_index = random.randint(0, len(self.players) - 1)
-        spy_index = 0
         for i, player in enumerate(self.players):
             player.is_spy = (i == spy_index)
 
@@ -299,7 +298,7 @@ class GameConfig:
     MIN_PLAYERS = 3
     MAX_PLAYERS = 8
     DRAWING_ROUNDS = 2
-    SHOW_ART_TIME_LIMIT = 3
+    SHOW_ART_TIME_LIMIT = 10
     VOTING_TIME_LIMIT = 60  # 秒
     DRAWING_TIME_LIMIT = 120  # 秒
     SPY_GUESS_TIME_LIMIT = 30  # 秒
@@ -310,7 +309,7 @@ class GameConfig:
     AVATAR_COUNT = 12
 
     # 提詞限制
-    MAX_PROMPT_LENGTH = 100
+    MAX_PROMPT_LENGTH = 30
     MIN_PROMPT_LENGTH = 5
 
 # 遊戲統計

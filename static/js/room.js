@@ -12,7 +12,10 @@ class RoomPage {
         this.timeBeforeCelebration = 4000;
 
         this.hasChooseTopic = false;
+        this.hasChooseArt = false;
+        this.hasVoteSpy = false;
         this.hasGuessedTopic = false;
+        this.hasWantNextGame = false;
 
         this.cleanUpTime = 2000;
 
@@ -254,6 +257,11 @@ class RoomPage {
         if (data.player_name) {
             GameUtils.showError(data.player_name + ' 離開了房間');
         }
+
+        const galleryPlayerStatusItem = document.getElementById(`gallery-player-status-item-${data.player_id}`);
+        if (galleryPlayerStatusItem) {
+            galleryPlayerStatusItem.remove();
+        }
     }
 
     // 處理頭像更換
@@ -270,6 +278,7 @@ class RoomPage {
     // 處理開始投票主題
     handleStartVotingTopic(data) {
         if (!data) return;
+        this.hasChooseTopic = false;
 
         this.drawInGamePlayersDisplay();
         this.showGameArea();
@@ -348,6 +357,7 @@ class RoomPage {
 
     handleMyArt(data) {
         if (Array.isArray(data.image_data)) {
+            this.hasChooseArt = false;
             const artworkSelect = document.getElementById('art-select-area');
             if (!artworkSelect) return;
 
@@ -367,6 +377,7 @@ class RoomPage {
                 frameImg.src = `../static/images/frame/default.png`;
                 frameImg.className = 'artwork-select-frame'; // 可選：添加樣式類名
                 frameImg.addEventListener('click', () => {
+                    if (this.hasChooseArt) return;
                     window.submitSelectedArt(index); // 點擊時觸發並傳送索引值
                 });
 
@@ -435,6 +446,7 @@ class RoomPage {
     }
 
     handleStartVotingSpy(data) {
+        this.hasVoteSpy = false;
         this.generateSpyVotingInterface(data.players);
         this.showInterface('spy-voting-interface');
     }
@@ -462,6 +474,7 @@ class RoomPage {
                 document.querySelectorAll('.vote-result-bar').forEach(bar => {
                     bar.remove();
                 });
+                this.hasGuessedTopic = false;
                 this.generateSpyGuessInterface(data);
                 this.showInterface('spy-guess-interface');
             });
@@ -469,6 +482,7 @@ class RoomPage {
 
     // 處理遊戲結束
     handleGameEnded(data) {
+        this.hasWantNextGame = false;
         this.showInterface('spy-guess-result-interface');
 
         const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -676,7 +690,8 @@ class RoomPage {
             playerId
         }) => {
             button.addEventListener('click', () => {
-                if (window.submitVote) {
+                if (window.submitVote && !this.hasVoteSpy) {
+                    this.hasVoteSpy = true;
                     window.submitVote(playerId);
                 }
                 // 消滅所有按鈕
@@ -891,8 +906,8 @@ class RoomPage {
                 optionElement.addEventListener('click', () => {
                     if (window.submitGuess && !this.hasGuessedTopic) {
                         window.submitGuess(optionElement.textContent);
+                        this.hasGuessedTopic = true;
                     }
-                    this.hasGuessedTopic = true;
                 });
             }
             spyGuessInterface.appendChild(optionElement);
@@ -1004,14 +1019,12 @@ class RoomPage {
     }
 
     generateGallery(data) {
-        const galleryContainer = document.getElementById('gallery-container');
-        if (!galleryContainer || !data) return;
+        const galleryItemContainer = document.getElementById('gallery-mid-content');
+        if (!galleryItemContainer || !data) return;
 
         // 清空之前的內容
-        galleryContainer.innerHTML = '';
+        galleryItemContainer.innerHTML = '';
 
-        const galleryItemContainer = document.createElement('div');
-        galleryItemContainer.className = 'gallery-item-container';
 
 
         // 生成畫廊項目
@@ -1147,7 +1160,34 @@ class RoomPage {
 
             galleryItemContainer.appendChild(itemElement);
         });
-        galleryContainer.appendChild(galleryItemContainer);
+        this.generateGalleryPlayerStatus();
+    }
+
+    generateGalleryPlayerStatus() {
+        const galleryPlayerStatus = document.getElementById('gallery-player-status');
+        if (!galleryPlayerStatus || !this.players) return;
+        galleryPlayerStatus.innerHTML = '';
+        this.players.forEach(player => {
+            const playerStatus = document.createElement('div');
+            playerStatus.className = 'gallery-player-status-item';
+            playerStatus.id = `gallery-player-status-item-${player.id}`;
+            const playerStatusImg = document.createElement('img');
+            playerStatusImg.className = 'player-status-img';
+            playerStatusImg.src = "../static/images/avatar/" + player.avatar_id + ".png";
+            playerStatus.appendChild(playerStatusImg);
+            const playerStatusSymbol = document.createElement('div');
+            playerStatusSymbol.className = 'player-status-symbol';
+            playerStatusSymbol.id = `player-status-symbol-${player.id}`;
+            playerStatusSymbol.textContent = '⌛︎';
+            playerStatus.appendChild(playerStatusSymbol);
+            galleryPlayerStatus.appendChild(playerStatus);
+        });
+    }
+
+    readyToPlayAgain(player_id) {
+        const galleryPlayerStatus = document.getElementById(`player-status-symbol-${player_id}`);
+        if (!galleryPlayerStatus || !this.players) return;
+        galleryPlayerStatus.textContent = '✔';
     }
 
     // 開始投票倒數
