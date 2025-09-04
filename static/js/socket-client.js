@@ -75,7 +75,7 @@ class SocketClient {
             this.playerId = data.player.id;
             GameUtils.gameState.setState('currentRoom', data.room_id);
             GameUtils.gameState.setState('currentPlayer', data.player);
-            window.roomPage = new RoomPage(data.room_id, this.playerId);
+            window.roomPage = new RoomPage(data);
         });
 
         this.socket.on('join_room_success', (data) => {
@@ -85,7 +85,7 @@ class SocketClient {
             GameUtils.gameState.setState('currentRoom', data.room_id);
             GameUtils.gameState.setState('currentPlayer', data.player);
 
-            window.roomPage = new RoomPage(data.room_id, this.playerId);
+            window.roomPage = new RoomPage(data);
         });
 
         this.socket.on('room_info', (data) => {
@@ -107,7 +107,7 @@ class SocketClient {
 
         this.socket.on('avatar_changed', (data) => {
             console.log('頭像更換:', data);
-            this.emit('avatarChanged', data);
+            window.roomPage.handleAvatarChanged(data);
         });
 
         this.socket.on('start_voting_topic', (data) => {

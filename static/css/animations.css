@@ -819,38 +819,6 @@
     gap: 12px;
 }
 
-.avatar-option {
-    font-size: 2rem;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 80px;
-    height: 80px;
-
-    cursor: pointer;
-    transition: all 0.3s ease;
-
-    color: white;
-    border: 3px solid var(--border-color);
-    border-radius: 50%;
-    background: var(--gradient-primary);
-}
-
-.avatar-option:hover {
-    transform: scale(1.1);
-
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-lg);
-}
-
-.avatar-option.selected {
-    transform: scale(1.1);
-    animation: glow 1s ease-in-out infinite;
-
-    border-color: var(--success-color);
-}
 
 /* 遊戲進度指示器動畫 */
 .game-progress {

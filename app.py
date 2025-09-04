@@ -79,6 +79,28 @@ except json.JSONDecodeError as e:
     GAME_TOPICS = {}
 
 
+AVATAR_FOLDER = './static/images/avatar'
+
+
+def count_images_in_folder(folder_path):
+    """計算指定資料夾內的圖片檔案數量"""
+    try:
+        image_count = sum(
+            1 for file in os.listdir(folder_path)
+            if os.path.isfile(os.path.join(folder_path, file)) and
+            file.rsplit('.', 1)[-1].lower() in ALLOWED_EXTENSIONS
+        )
+        logger.info(f'資料夾 {folder_path} 中的圖片檔案數量: {image_count}')
+        return image_count
+    except Exception as e:
+        logger.error(f'計算圖片檔案數量時發生錯誤: {e}')
+        return 0
+
+
+# 計算 AVATAR_FOLDER 中的圖片檔案數量
+AVATAR_COUNT = count_images_in_folder(AVATAR_FOLDER)
+
+
 @app.route('/')
 def root():
     abort(404)
@@ -339,7 +361,8 @@ def handle_create_room(data):
 
         emit('room_created', {
             'room_id': room_id,
-            'player': player.to_dict()
+            'player': player.to_dict(),
+            'avatar_count': AVATAR_COUNT
         })
 
     except Exception as e:
@@ -402,7 +425,8 @@ def handle_join_room(data):
         emit('join_room_success', {
             'room_id': room_id,
             'player': player.to_dict(),
-            'players': [p.to_dict() for p in room.players]
+            'players': [p.to_dict() for p in room.players],
+            'avatar_count': AVATAR_COUNT
         })
 
         # 再通知房間內所有玩家（包括新加入的）
@@ -418,6 +442,154 @@ def handle_join_room(data):
         emit('error', {'message': '加入房間失敗，請重試'})
 
 
+@socketio.on('ping')
+def handle_ping(data=None):
+    """心跳檢測"""
+    emit('pong')
+
+
+@socketio.on('rejoin_room')
+def handle_rejoin_room(data):
+    """重新加入房間（用於頁面跳轉後重新連接）"""
+    try:
+        room_id = data.get('room_id')
+        player_id = data.get('player_id')
+
+        logger.info(f'嘗試重新加入房間: room_id={room_id}, player_id={player_id}')
+
+        if not room_id or not player_id:
+            emit('error', {'message': '缺少房間或玩家資訊'})
+            return
+
+        room = game_manager.get_room(room_id)
+        if not room:
+            emit('error', {'message': '房間不存在或已關閉'})
+            return
+
+        player = room.get_player(player_id)
+        if not player:
+            emit('error', {'message': '玩家不在此房間中'})
+            return
+
+        # 更新玩家的 socket ID
+        player.socket_id = request.sid
+
+        # 重新加入房間
+        join_room(room_id)
+        session['room_id'] = room_id
+        session['player_id'] = player_id
+
+        logger.info(f'玩家重新連接成功: {player.name} -> {room_id}')
+
+        # 發送房間當前狀態
+        emit('room_rejoined', {
+            'room_id': room_id,
+            'player': player.to_dict(),
+            'players': [p.to_dict() for p in room.players],
+            'phase': room.phase,
+            'current_round': getattr(room, 'current_round', 1)
+        })
+
+        # 如果遊戲已經開始，發送遊戲狀態
+        if room.phase == 'drawing' and hasattr(room, 'topic'):
+            if player.is_spy:
+                emit('game_started', {
+                    'topic': room.topic,
+                    'keyword': None,
+                    'is_spy': True,
+                    'round': room.current_round
+                })
+            else:
+                emit('game_started', {
+                    'topic': room.topic,
+                    'keyword': room.keyword,
+                    'is_spy': False,
+                    'round': room.current_round
+                })
+
+    except Exception as e:
+        logger.error(f'重新加入房間錯誤: {e}', exc_info=True)
+
+
+@socketio.on('get_room_info')
+def handle_get_room_info(data=None):
+    """獲取房間資訊"""
+    try:
+        room_id = session.get('room_id')
+        if not room_id:
+            emit('error', {'message': '未加入任何房間'})
+            return
+
+        room = game_manager.get_room(room_id)
+        if not room:
+            emit('error', {'message': '房間不存在'})
+            return
+
+        emit('room_info', {
+            'room_id': room.id,
+            'phase': room.phase,
+            'players': [p.to_dict() for p in room.players],
+            'current_round': room.current_round
+        })
+
+    except Exception as e:
+        logger.error(f'獲取房間資訊錯誤: {e}')
+        emit('error', {'message': '獲取房間資訊失敗'})
+
+
+@socketio.on('leave_room')
+def handle_leave_room(data=None):
+    """玩家離開房間"""
+    try:
+        room_id = session.get('room_id')
+        player_id = session.get('player_id')
+
+        if not room_id or not player_id:
+            emit('error', {'message': '未在任何房間中'})
+            return
+
+        room = game_manager.get_room(room_id)
+        if not room:
+            emit('error', {'message': '房間不存在'})
+            return
+
+        player = room.get_player(player_id)
+        if not player:
+            emit('error', {'message': '玩家不在此房間中'})
+            return
+
+        player_name = player.name
+        sid = request.sid
+
+        current_room = game_manager.get_room(room_id)
+        if current_room:
+            current_player = current_room.get_player(player_id)
+            if current_player and current_player.socket_id == sid:
+                current_room.remove_player(player_id)
+
+                logger.info(
+                    f'玩家主動離開房間: {player_name} from {room_id}'
+                )
+                leave_room(room_id)
+                socketio.emit('player_left', {
+                    'player_name': player_name,
+                    'player_id': player_id,
+                    'players': [p.to_dict() for p in current_room.players]
+                }, room=room_id)
+
+                if len(current_room.players) == 0:
+                    game_manager.remove_room(room_id)
+                    logger.info(f'房間已刪除: {room_id}')
+
+                # 清除 session
+                session.pop('room_id', None)
+                session.pop('player_id', None)
+
+    except Exception as e:
+        logger.error(f'離開房間錯誤: {e}', exc_info=True)
+        emit('error', {'message': '離開房間失敗'})
+
+
 @socketio.on('change_avatar')
 def handle_change_avatar(data):
     """更換玩家頭像"""
@@ -430,7 +602,7 @@ def handle_change_avatar(data):
             emit('error', {'message': '請先加入房間'})
             return
 
-        if not isinstance(avatar_id, int) or avatar_id < 1 or avatar_id > 12:
+        if not isinstance(avatar_id, int) or avatar_id < 0 or avatar_id > AVATAR_COUNT:
             emit('error', {'message': '無效的頭像ID'})
             return
 
@@ -483,7 +655,8 @@ def handle_start_game(data=None):
         # 發送遊戲訊息給所有玩家
         socketio.emit('start_voting_topic', {
             'room_id': room_id,
-            'topics': topics
+            'topics': topics,
+            'players': [p.to_dict() for p in room.players]
         }, room=room_id)
         # debug直接跳到投票階段
         # socketio.emit('start_voting_spy', {
@@ -940,154 +1113,6 @@ def handle_spy_guess(data):
         emit('error', {'message': '猜測失敗，請重試'})
 
 
-@socketio.on('ping')
-def handle_ping(data=None):
-    """心跳檢測"""
-    emit('pong')
-
-
-@socketio.on('rejoin_room')
-def handle_rejoin_room(data):
-    """重新加入房間（用於頁面跳轉後重新連接）"""
-    try:
-        room_id = data.get('room_id')
-        player_id = data.get('player_id')
-
-        logger.info(f'嘗試重新加入房間: room_id={room_id}, player_id={player_id}')
-
-        if not room_id or not player_id:
-            emit('error', {'message': '缺少房間或玩家資訊'})
-            return
-
-        room = game_manager.get_room(room_id)
-        if not room:
-            emit('error', {'message': '房間不存在或已關閉'})
-            return
-
-        player = room.get_player(player_id)
-        if not player:
-            emit('error', {'message': '玩家不在此房間中'})
-            return
-
-        # 更新玩家的 socket ID
-        player.socket_id = request.sid
-
-        # 重新加入房間
-        join_room(room_id)
-        session['room_id'] = room_id
-        session['player_id'] = player_id
-
-        logger.info(f'玩家重新連接成功: {player.name} -> {room_id}')
-
-        # 發送房間當前狀態
-        emit('room_rejoined', {
-            'room_id': room_id,
-            'player': player.to_dict(),
-            'players': [p.to_dict() for p in room.players],
-            'phase': room.phase,
-            'current_round': getattr(room, 'current_round', 1)
-        })
-
-        # 如果遊戲已經開始，發送遊戲狀態
-        if room.phase == 'drawing' and hasattr(room, 'topic'):
-            if player.is_spy:
-                emit('game_started', {
-                    'topic': room.topic,
-                    'keyword': None,
-                    'is_spy': True,
-                    'round': room.current_round
-                })
-            else:
-                emit('game_started', {
-                    'topic': room.topic,
-                    'keyword': room.keyword,
-                    'is_spy': False,
-                    'round': room.current_round
-                })
-
-    except Exception as e:
-        logger.error(f'重新加入房間錯誤: {e}', exc_info=True)
-
-
-@socketio.on('get_room_info')
-def handle_get_room_info(data=None):
-    """獲取房間資訊"""
-    try:
-        room_id = session.get('room_id')
-        if not room_id:
-            emit('error', {'message': '未加入任何房間'})
-            return
-
-        room = game_manager.get_room(room_id)
-        if not room:
-            emit('error', {'message': '房間不存在'})
-            return
-
-        emit('room_info', {
-            'room_id': room.id,
-            'phase': room.phase,
-            'players': [p.to_dict() for p in room.players],
-            'current_round': room.current_round
-        })
-
-    except Exception as e:
-        logger.error(f'獲取房間資訊錯誤: {e}')
-        emit('error', {'message': '獲取房間資訊失敗'})
-
-
-@socketio.on('leave_room')
-def handle_leave_room(data=None):
-    """玩家離開房間"""
-    try:
-        room_id = session.get('room_id')
-        player_id = session.get('player_id')
-
-        if not room_id or not player_id:
-            emit('error', {'message': '未在任何房間中'})
-            return
-
-        room = game_manager.get_room(room_id)
-        if not room:
-            emit('error', {'message': '房間不存在'})
-            return
-
-        player = room.get_player(player_id)
-        if not player:
-            emit('error', {'message': '玩家不在此房間中'})
-            return
-
-        player_name = player.name
-        sid = request.sid
-
-        current_room = game_manager.get_room(room_id)
-        if current_room:
-            current_player = current_room.get_player(player_id)
-            if current_player and current_player.socket_id == sid:
-                current_room.remove_player(player_id)
-
-                logger.info(
-                    f'玩家主動離開房間: {player_name} from {room_id}'
-                )
-                leave_room(room_id)
-                socketio.emit('player_left', {
-                    'player_name': player_name,
-                    'player_id': player_id,
-                    'players': [p.to_dict() for p in current_room.players]
-                }, room=room_id)
-
-                if len(current_room.players) == 0:
-                    game_manager.remove_room(room_id)
-                    logger.info(f'房間已刪除: {room_id}')
-
-                # 清除 session
-                session.pop('room_id', None)
-                session.pop('player_id', None)
-
-    except Exception as e:
-        logger.error(f'離開房間錯誤: {e}', exc_info=True)
-        emit('error', {'message': '離開房間失敗'})
-
-
 @socketio.on('play_again')
 def handle_play_again(data=None):
     """玩家準備再次遊玩"""
@@ -1113,6 +1138,24 @@ def handle_play_again(data=None):
         socketio.emit('player_play_again', {
             'player_id': player_id
         }, room=room_id)
+
+        if player.is_host:
+            room.reset_for_new_game()
+
+            # 隨機選擇主題和關鍵詞
+            if GAME_TOPICS:
+                topics = random.sample(list(GAME_TOPICS.keys()), 6)
+            else:
+                topics = ["default_topic"]
+
+            room.topicCandidates = topics
+            room.topicVoteCount = [0] * len(topics)
+            # 發送遊戲訊息給所有玩家
+            socketio.emit('start_voting_topic', {
+                'room_id': room_id,
+                'topics': topics,
+                'players': [p.to_dict() for p in room.players]
+            }, room=room_id)
 
     except Exception as e:
         logger.error(f'玩家準備再次遊玩錯誤: {e}', exc_info=True)

@@ -1,6 +1,6 @@
 // 房間功能模組
 class RoomPage {
-    constructor(roomId, PlayerId) {
+    constructor(data) {
         //參數設定
         this.timeBeforeShowVoteCount = 2000;
         this.timeBeforeShowVoteDetail = 2000;
@@ -19,15 +19,14 @@ class RoomPage {
 
         this.cleanUpTime = 2000;
 
-        this.roomId = roomId;
+        this.AVATAR_COUNT = data.avatar_count || 0;
+        this.roomId = data.roomId;
         this.players = [];
-        this.currentPlayer = null;
-        this.gameData = null;
         this.selectedVoteTarget = null;
         this.selectedGuessOption = null;
         this.selectedAvatar = null;
         this.countdownTimer = null;
-        this.myPlayerId = PlayerId || null; // 新增 myPlayerId 屬性
+        this.myPlayerId = data.player.id;
         this.IamSpy = false;
         this.spyId = null;
         this.homepage_container = document.getElementById('homepage-container');
@@ -72,76 +71,21 @@ class RoomPage {
     // 設定事件監聽器
     setupEventListeners() {
         this.submitDrawingPromptBtn.addEventListener("click", () => this.submitDrawingPrompt());
-        // 頭像選擇
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.avatar-option')) {
-                this.selectAvatar(e.target.closest('.avatar-option'));
-            }
-
-            // 投票選項點擊
-            if (e.target.closest('.vote-option')) {
-                this.selectVoteOption(e.target.closest('.vote-option'));
-            }
-
-        });
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.avatar-option')) {
-                this.selectAvatar(e.target.closest('.avatar-option'));
-            }
-
-            // 投票選項點擊
-            if (e.target.closest('.vote-option')) {
-                this.selectVoteOption(e.target.closest('.vote-option'));
-            }
-        });
 
         // 字元計數
         const promptInput = document.getElementById('drawing-prompt');
         if (promptInput) {
             promptInput.addEventListener('input', () => this.updateCharCount());
         }
-
-        // 添加滑鼠移動事件監聽器
-        window.addEventListener('mousemove', function (event) {
-            const followInterface = document.getElementById('FollowInterface');
-            if (!followInterface) return;
-
-            const mouseX = event.clientX;
-            const mouseY = event.clientY;
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-
-            let positionX, positionY;
-
-            // 判斷滑鼠所在區域
-            if (mouseX < windowWidth / 2) {
-                // 左半部
-                positionX = mouseX + 10; // 生在指標右邊
-            } else {
-                // 右半部
-                positionX = mouseX - followInterface.offsetWidth - 10; // 生在指標左邊
-            }
-
-            if (mouseY < windowHeight / 2) {
-                // 上半部
-                positionY = mouseY + 10; // 生在指標下方
-            } else {
-                // 下半部
-                positionY = mouseY - followInterface.offsetHeight - 10; // 生在指標上方
-            }
-
-            // 設置 FollowInterface 的位置
-            followInterface.style.left = `${positionX}px`;
-            followInterface.style.top = `${positionY}px`;
-        });
     }
 
     // 初始化房間
     initializeRoom() {
         this.homepage_container.style.display = 'none';
-        this.room_container.style.display = 'block';
+        this.room_container.style.display = 'flex';
         this.gametable_container.style.display = 'none';
 
+        this.generateAvatarSelection(this.AVATAR_COUNT);
         // 修正: 使用 GameUtils.hideLoading() 而不是 hideLoading()
         if (typeof GameUtils !== 'undefined' && GameUtils.hideLoading) {
             GameUtils.hideLoading();
@@ -170,7 +114,6 @@ class RoomPage {
 
         // 如果數據中包含當前玩家信息，保存它
         if (data.current_player) {
-            this.currentPlayer = data.current_player;
             GameUtils.gameState.setState('currentPlayer', data.current_player);
         }
     }
@@ -185,7 +128,6 @@ class RoomPage {
         }
 
         this.players = data.players || [];
-        this.currentPlayer = data.player;
 
         // 保存狀態
         if (data.player) {
@@ -266,7 +208,7 @@ class RoomPage {
 
     // 處理頭像更換
     handleAvatarChanged(data) {
-        if (!data || !data.player_id) return;
+        if (!data) return;
 
         const player = this.players.find(p => p.id === data.player_id);
         if (player) {
@@ -279,9 +221,8 @@ class RoomPage {
     handleStartVotingTopic(data) {
         if (!data) return;
         this.hasChooseTopic = false;
-
-        this.drawInGamePlayersDisplay();
-        this.showGameArea();
+        this.drawInGamePlayersDisplay(data.players);
+        this.showContainer('gametable-container');
         const drawingTips = document.getElementById('drawing-tips');
         drawingTips.innerHTML = '投票選出主題';
         const topicArea = document.getElementById('subject-vote-area');
@@ -309,9 +250,8 @@ class RoomPage {
 
         if (!data) return;
 
-        this.gameData = data;
         this.IamSpy = data.is_spy;
-        this.showGameArea();
+        this.showContainer('gametable-container');
 
         //缺展示提詞畫面
         this.handleTopicAndKeyWordDisplay(data)
@@ -500,20 +440,54 @@ class RoomPage {
     }
 
     // 更新玩家顯示
-    drawInGamePlayersDisplay() {
-        for (let i = 0; i < this.players.length; i++) {
-            const player = this.players[i];
-            const player_avatar = document.getElementById(`player${i+1}-avatar`);
-            const player_name = document.getElementById(`player${i+1}-name`);
-            if (player_avatar) {
-                const img = document.createElement('img');
-                img.className = 'in-game-avatar-img';
-                img.src = `../static/images/avatar/${player.avatar_id}.png`;
-                img.alt = `${player.name || 'Unknown'} 的頭像`;
-                player_avatar.insertBefore(img, player_avatar.firstChild);
-            }
-            if (player_name) {
-                player_name.textContent = player.name || 'Unknown';
+    drawInGamePlayersDisplay(players) {
+        const playerAvatarBlockL = document.getElementById('player-avatar-block-L');
+        const playerAvatarBlockR = document.getElementById('player-avatar-block-R');
+        // 先清空左右區塊
+        if (playerAvatarBlockL) playerAvatarBlockL.innerHTML = '';
+        if (playerAvatarBlockR) playerAvatarBlockR.innerHTML = '';
+
+        for (let i = 0; i < players.length; i++) {
+            const player = players[i];
+            const playerNum = i + 1;
+            // 建立玩家區塊
+            const playerBlock = document.createElement('div');
+            playerBlock.className = playerNum % 2 === 1 ? 'playerBlockL' : 'playerBlockR';
+            playerBlock.id = `player${playerNum}`;
+
+            // 頭像區塊
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'in-game-player-avatar';
+            avatarDiv.id = `player${playerNum}-avatar`;
+
+            // 頭像圖片
+            const img = document.createElement('img');
+            img.className = 'in-game-avatar-img';
+            img.src = `../static/images/avatar/${player.avatar_id}.png`;
+            img.alt = `${player.name || 'Unknown'} 的頭像`;
+            avatarDiv.appendChild(img);
+
+            // 玩家名稱
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'in-game-player-name';
+            nameDiv.id = `player${playerNum}-name`;
+            nameDiv.textContent = player.name || 'Unknown';
+            avatarDiv.appendChild(nameDiv);
+
+            // 藝術作品區塊
+            const artDiv = document.createElement('div');
+            artDiv.className = playerNum % 2 === 1 ? 'in-game-player-art-L' : 'in-game-player-art-R';
+            artDiv.id = `player${playerNum}-art`;
+
+            // 組合
+            playerBlock.appendChild(avatarDiv);
+            playerBlock.appendChild(artDiv);
+
+            // 插入左右區塊
+            if (playerNum % 2 === 1 && playerAvatarBlockL) {
+                playerAvatarBlockL.appendChild(playerBlock);
+            } else if (playerNum % 2 === 0 && playerAvatarBlockR) {
+                playerAvatarBlockR.appendChild(playerBlock);
             }
         }
     }
@@ -531,34 +505,67 @@ class RoomPage {
             return;
         }
 
-        playersGrid.innerHTML = this.players.map(player => this.createPlayerCard(player)).join('');
+        playersGrid.innerHTML = ''; // 清空現有內容
+
+        this.players.forEach(player => {
+            const playerCard = this.createPlayerCard(player);
+            playersGrid.appendChild(playerCard);
+        });
     }
 
     // 建立玩家卡片
     createPlayerCard(player) {
-        if (!player) return '';
+        if (!player) return null;
 
-        const isCurrentPlayer = this.currentPlayer && this.currentPlayer.id === player.id;
-        player.avatar_id;
         let frame = 'metalOld';
         if (player.is_host) {
             frame = 'gold';
         } else if (this.myPlayerId === player.id) {
             frame = 'metalNew';
         }
-        return `
-        <div class="player-card ${player.is_host ? 'host' : ''} ${isCurrentPlayer ? 'current-player' : ''}" 
-                data-player-id="${player.id}">
-            <div class="player-avatar">
-                <img class="player-avatar-img" src="../static/images/avatar/${player.avatar_id}.png" alt="${player.name} 的頭像">
-                <img class="player-frame-img" src="../static/images/frame/${frame}.png">
-            </div>
-            <div class="player-info">
-                <div class="player-name">${player.name || 'Unknown'}${player.is_host ? ' 房主' : ''}</div>
-                ${isCurrentPlayer ? '<div class="current-player-indicator">您</div>' : ''}
-            </div>
-        </div>
-    `;
+
+        const playerCard = document.createElement('div');
+        playerCard.className = `player-card ${player.is_host ? 'host' : ''}`;
+        playerCard.dataset.playerId = player.id;
+
+        const playerAvatar = document.createElement('div');
+        playerAvatar.className = 'player-avatar';
+
+        const avatarImg = document.createElement('img');
+        avatarImg.className = 'player-avatar-img';
+        avatarImg.src = `../static/images/avatar/${player.avatar_id}.png`;
+        avatarImg.alt = `${player.name} 的頭像`;
+        avatarImg.id = `avatar-img-${player.id}`;
+
+        const frameImg = document.createElement('img');
+        frameImg.className = 'player-frame-img';
+        frameImg.src = `../static/images/frame/${frame}.png`;
+
+        playerAvatar.appendChild(avatarImg);
+        playerAvatar.appendChild(frameImg);
+
+        const playerInfo = document.createElement('div');
+        playerInfo.className = 'player-info';
+
+        const playerName = document.createElement('div');
+        playerName.className = 'player-name';
+        playerName.textContent = `${player.name || 'Unknown'}${player.is_host ? ' 房主' : ''}`;
+
+        if (player.id === this.myPlayerId) {
+            frameImg.addEventListener('click', () => {
+                const avatarSelectContainer = document.getElementById('avatar-select-container');
+                if (avatarSelectContainer) {
+                    avatarSelectContainer.style.display = 'grid';
+                }
+            });
+        }
+
+        playerInfo.appendChild(playerName);
+
+        playerCard.appendChild(playerAvatar);
+        playerCard.appendChild(playerInfo);
+
+        return playerCard;
     }
 
     // 檢查開始遊戲按鈕
@@ -579,17 +586,6 @@ class RoomPage {
 
     // 其餘方法保持不變...
     // [繼續其他方法的實現，這裡只展示修復的關鍵部分]
-
-    // 顯示遊戲區域
-    showGameArea() {
-        const homepage_container = document.getElementById('homepage-container');
-        const room_container = document.getElementById('room-container');
-        const gametable_container = document.getElementById('gametable-container');
-
-        homepage_container.style.display = 'none';
-        room_container.style.display = 'none';
-        gametable_container.style.display = 'flex';
-    }
 
     showContainer(containerName) {
         this.container.forEach(id => {
@@ -657,6 +653,34 @@ class RoomPage {
             </div>
         </div>
     `;
+    }
+
+    generateAvatarSelection(avatar_count) {
+        const avatarContainer = document.getElementById('avatar-select-container');
+        if (!avatarContainer) return;
+
+        // 清空現有的選擇
+        avatarContainer.innerHTML = '';
+
+        // 生成新的角色選擇
+        for (let i = 0; i < avatar_count; i++) {
+            const avatarOptionimg = document.createElement('img');
+            avatarOptionimg.className = 'avatar-option';
+            avatarOptionimg.id = `avatar-option-${i}`;
+            avatarOptionimg.src = `../static/images/avatar/${i}.png`;
+            avatarContainer.appendChild(avatarOptionimg);
+            avatarOptionimg.addEventListener('click', () => {
+                window.changeAvatar(i);
+                const myAvatarImg = document.getElementById(`avatar-img-${this.myPlayerId}`);
+                if (myAvatarImg) {
+                    myAvatarImg.src = `../static/images/avatar/${i}.png`;
+                }
+                const avatarSelectContainer = document.getElementById('avatar-select-container');
+                if (avatarSelectContainer) {
+                    avatarSelectContainer.style.display = 'none';
+                }
+            });
+        }
     }
 
     // 顯示投票間諜界面
@@ -775,6 +799,7 @@ class RoomPage {
         const body = document.body;
         const gametableContainer = document.getElementById('gametable-container');
         const realSpyInterface = document.getElementById('real-spy-interface');
+        realSpyInterface.innerHTML = '';
 
         body.classList.add('body-dark');
         gametableContainer.classList.add('gametable-container-dark');

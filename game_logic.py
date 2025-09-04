@@ -232,6 +232,24 @@ class Room:
                 return player
         return None
 
+    def reset_for_new_game(self):
+        """重置房間以開始新遊戲"""
+        self.phase = 0
+        self.topicCandidates = []
+        self.topicVoteCount = []
+        self.topic = '電玩遊戲'
+        self.keyword = 'Minecraft'
+        self.current_round = 1
+        self.show_art_order = []
+        self.now_showing = 0
+        self.timer = None
+        self.guess_spy_correct = False
+        self.votes = {}
+        for player in self.players:
+            player.is_spy = False
+            player.topic_voted = False
+            player.submitted_data = []
+
 
 class GameManager:
     """遊戲管理器"""
