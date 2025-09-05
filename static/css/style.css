@@ -78,6 +78,7 @@
     --bg-border-lite: #d8c6ff;
     --bg-primary-gradient: radial-gradient(circle at top, #9a40c5 20%, #52368e 100%);
     --bg-primary-gradient-dark: radial-gradient(circle at top, #401952 0%, #000000 100%);
+    --bg-style: #171b65;
     --bg-gallery-gradient: radial-gradient(circle at top, #c93537 20%, #6b111d 100%);
     --bg-gallery-gradient-dark: radial-gradient(circle at top, #862325 20%, #420b12 100%);
     --bg-card: #16213e;
@@ -585,9 +586,9 @@ p {
     transition: all 0.3s ease;
 
     color: white;
-    border: 3px solid var(--border-color);
+    border: 3px solid var(--bg-style);
     border-radius: 8px;
-    background: var(--bg-primary-gradient-dark);
+    background: var(--bg-style);
 }
 
 .style-option-img {
@@ -731,7 +732,7 @@ p {
 
 ::-webkit-scrollbar-track {
     border-radius: 4px;
-    background: var(--bg-secondary);
+    background: var(--bg-style);
 }
 
 ::-webkit-scrollbar-thumb {
