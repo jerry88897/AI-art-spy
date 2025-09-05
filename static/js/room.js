@@ -22,9 +22,11 @@ class RoomPage {
         this.AVATAR_COUNT = data.avatar_count || 0;
         this.roomId = data.roomId;
         this.players = [];
+        this.styles = null;
         this.selectedVoteTarget = null;
         this.selectedGuessOption = null;
         this.selectedAvatar = null;
+        this.selectedStyle = 0;
         this.countdownTimer = null;
         this.myPlayerId = data.player.id;
         this.IamSpy = false;
@@ -71,6 +73,11 @@ class RoomPage {
     // 設定事件監聽器
     setupEventListeners() {
         this.submitDrawingPromptBtn.addEventListener("click", () => this.submitDrawingPrompt());
+
+        const selectedStyle = document.getElementById('selected-style');
+        if (selectedStyle) {
+            selectedStyle.addEventListener('click', () => this.showStyleSelection());
+        }
 
         // 字元計數
         const promptInput = document.getElementById('drawing-prompt');
@@ -254,6 +261,9 @@ class RoomPage {
         this.showContainer('gametable-container');
 
         //缺展示提詞畫面
+        this.styles = data.styles || null;
+        this.generateStyleSelection(data.styles);
+        this.updateSelectedStyle();
         this.handleTopicAndKeyWordDisplay(data)
         this.handleWriteDrawingPrompt()
         //this.updateProgressIndicator(1);
@@ -680,6 +690,42 @@ class RoomPage {
                     avatarSelectContainer.style.display = 'none';
                 }
             });
+        }
+    }
+    generateStyleSelection(styles) {
+        const styleOptionsContainer = document.getElementById('style-options-container');
+        if (!styleOptionsContainer) return;
+
+        // 清空現有的選擇
+        styleOptionsContainer.innerHTML = '';
+        for (let i = 0; i < styles.length; i++) {
+            const styleOption = document.createElement('div');
+            styleOption.className = 'style-option';
+
+            const styleOptionImg = document.createElement('img');
+            styleOptionImg.className = 'style-option-img';
+            styleOptionImg.src = `../static/images/styles/${styles[i].thumbnail}`;
+            styleOption.appendChild(styleOptionImg);
+
+            const styleIntroductionBlock = document.createElement('div');
+            styleIntroductionBlock.className = 'style-introduction-block';
+            const styleOptionName = document.createElement('div');
+            styleOptionName.className = 'style-option-name';
+            styleOptionName.textContent = styles[i].style_name;
+            const styleOptionIntroduction = document.createElement('div');
+            styleOptionIntroduction.className = 'style-option-introduction';
+            styleOptionIntroduction.textContent = styles[i].introduction || '無介紹';
+
+            styleIntroductionBlock.appendChild(styleOptionName);
+            styleIntroductionBlock.appendChild(styleOptionIntroduction);
+            styleOption.appendChild(styleIntroductionBlock);
+
+            styleOption.addEventListener('click', () => {
+                this.selectedStyle = i;
+                this.updateSelectedStyle();
+                this.hideStyleSelection();
+            });
+            styleOptionsContainer.appendChild(styleOption);
         }
     }
 
@@ -1318,19 +1364,9 @@ class RoomPage {
             return;
         }
 
-        window.socketClient.submitDrawingPrompt(prompt);
+        window.socketClient.submitDrawingPrompt(prompt, this.selectedStyle);
     }
 
-
-    // 確認頭像更換
-    confirmAvatarChange() {
-        if (this.selectedAvatar) {
-            window.socketClient.changeAvatar(parseInt(this.selectedAvatar));
-            if (window.hideAvatarModal) {
-                window.hideAvatarModal();
-            }
-        }
-    }
 
     // 設定進度指示器
     setupProgressIndicator() {
@@ -1340,6 +1376,34 @@ class RoomPage {
                 // 可以添加步驟說明或其他交互
             });
         });
+    }
+
+    showStyleSelection() {
+        const styleSelectionArea = document.getElementById('style-selection-area');
+        if (styleSelectionArea) {
+            styleSelectionArea.style.display = 'flex';
+        }
+    }
+
+    hideStyleSelection() {
+        const styleSelectionArea = document.getElementById('style-selection-area');
+        if (styleSelectionArea) {
+            styleSelectionArea.style.display = 'none';
+        }
+    }
+
+
+    // 更新選中的風格樣式
+    updateSelectedStyle() {
+        const selectedStyleImage = document.getElementById('selected-style-image');
+        const selectedStyleName = document.getElementById('selected-style-name');
+        const selectedStyleIntroduction = document.getElementById('selected-style-introduction');
+
+        if (selectedStyleImage && selectedStyleName && selectedStyleIntroduction) {
+            selectedStyleImage.src = `../static/images/styles/${this.styles[this.selectedStyle].thumbnail}`;
+            selectedStyleName.textContent = this.styles[this.selectedStyle].style_name;
+            selectedStyleIntroduction.textContent = this.styles[this.selectedStyle].introduction;
+        }
     }
 
     // 更新進度指示器

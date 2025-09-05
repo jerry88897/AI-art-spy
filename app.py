@@ -66,6 +66,7 @@ except Exception as e:
 # 遊戲主題和關鍵詞資料庫
 # 從 JSON 檔案讀取遊戲主題和關鍵詞資料庫
 GAME_TOPICS_FILE = 'key_word.json'
+STYLES_FILE = 'comfy_style.json'
 
 try:
     with open(GAME_TOPICS_FILE, 'r', encoding='utf-8') as f:
@@ -77,6 +78,17 @@ except FileNotFoundError:
 except json.JSONDecodeError as e:
     logger.error(f'解析遊戲主題檔案失敗: {e}')
     GAME_TOPICS = {}
+
+try:
+    with open(STYLES_FILE, 'r', encoding='utf-8') as f:
+        STYLES = json.load(f)
+    logger.info(f'成功載入圖片風格資料庫: {[style["style_name"] for style in STYLES]}')
+except FileNotFoundError:
+    logger.error(f'找不到圖片風格檔案: {STYLES_FILE}')
+    STYLES = []
+except json.JSONDecodeError as e:
+    logger.error(f'解析圖片風格檔案失敗: {e}')
+    STYLES = []
 
 
 AVATAR_FOLDER = './static/images/avatar'
@@ -728,6 +740,15 @@ def handle_topic_voted(data=None):
             logger.info(
                 f'遊戲開始: {room_id}, 主題: {selected_topic}, 關鍵詞: {room.keyword}, 玩家數: {len(room.players)}')
 
+            # 打包風格資料
+            styles_data = [
+                {
+                    'style_name': style.get('style_name'),
+                    'introduction': style.get('introduction'),
+                    'thumbnail': style.get('thumbnail')
+                }
+                for style in STYLES
+            ]
             # 發送遊戲開始訊息給所有玩家
             for game_player in room.players:
                 if game_player.is_spy:
@@ -735,6 +756,7 @@ def handle_topic_voted(data=None):
                         'topic': selected_topic,
                         'keyword': '?',  # 間諜看不到關鍵詞
                         'is_spy': True,
+                        'styles': styles_data,
                         'round': 1
                     }, room=game_player.socket_id)
                     logger.info(f'間諜: {game_player.name}')
@@ -743,6 +765,7 @@ def handle_topic_voted(data=None):
                         'topic': selected_topic,
                         'keyword': room.keyword,
                         'is_spy': False,
+                        'styles': styles_data,
                         'round': 1
                     }, room=game_player.socket_id)
             room.phase += 2  # 跳過顯示階段
@@ -765,6 +788,7 @@ def handle_submit_drawing_prompt(data):
         room_id = session.get('room_id')
         player_id = session.get('player_id')
         prompt = escape(data.get('prompt', '').strip())
+        style_index = int(data.get('selected_style', 0))
 
         room = game_manager.get_room(room_id)
         if not room or room.phaseName[room.phase] != 'drawing':
@@ -795,7 +819,8 @@ def handle_submit_drawing_prompt(data):
             wf = ComfyWorkflowWrapper("flux_devTW_checkpoint_example.json")
             wf.set_node_param("Deep Translator Text Node",
                               "text", prompt)
-            wf.set_node_param("style", "value", "")
+            wf.set_node_param("style", "value",
+                              STYLES[style_index]['prompt'])
             wf.set_node_param("player_id", "value", player_id)
             wf.set_node_param("room_id", "value", room_id)
             wf.set_node_param("round", "value", current_round)

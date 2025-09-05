@@ -1,0 +1,62 @@
+[
+    {
+        "style_name": "寫實相片",
+        "introduction": "預設圖片風格，以真實攝影為基礎，營造出宛如生活場景般的畫面，給人沉浸感與真實感。",
+        "prompt": "real life,photo like",
+        "thumbnail": "real_photo.png"
+    },
+    {
+        "style_name": "日本動畫",
+        "introduction": "呈現 60 至 80 年代復古動畫氛圍，畫面帶有手繪賽璐珞質感。",
+        "prompt": "Toei retro anime style . Hand-painted cels, exaggerated motion, retro vibes, 60s - 80s era animation.",
+        "thumbnail": "japanese_anime_retro.png"
+    },
+    {
+        "style_name": "日本動漫",
+        "introduction": "以現代動漫特色為主，線條乾淨利落，色彩鮮明，畫面明快而細膩。",
+        "prompt": "anime-style with clean, bold line art and soft cell shading; vibrant yet balanced color palette; emphasis on expressive eyes and hair highlights; simple composition with flat shadows; subtle gradients for depth; light bloom effect on edges; overall aesthetic combining classic anime simplicity with modern polish.",
+        "thumbnail": "japanese_anime_modern.png"
+    },
+    {
+        "style_name": "普普藝術",
+        "introduction": "以強烈對比色與粗黑線條呈現，畫面大膽鮮明，具有現代藝術張力與流行文化氛圍。",
+        "prompt": "Simple flat color pen and ink drawing in the style of Andy Warhol. The graphic features flat, solid colors and thick black outlines.",
+        "thumbnail": "pop_art.png"
+    },
+    {
+        "style_name": "小孩插畫",
+        "introduction": "模仿孩童隨意揮灑的塗鴉與簡單構圖，充滿童趣與稚拙感，帶來天真、純粹的視覺效果。",
+        "prompt": "Child's crayon scribbles on notebook paper.  Only crayon. wide rule notebook paper. Bad art. Stick figure.",
+        "thumbnail": "child_drawing.png"
+    },
+    {
+        "style_name": "抽象風格",
+        "introduction": "透過幾何形狀與大膽筆觸組成夢幻般的畫面，偏向立體派與超現實的藝術表現，打破寫實束縛。",
+        "prompt": "A cubist abstract painting by Pablo Picasso. The painting features bold brush strokes and sharp geometric shapes. The painting is abstract and dream like.",
+        "thumbnail": "abstract_art.png"
+    },
+    {
+        "style_name": "油畫藝術",
+        "introduction": "色彩濃郁、筆觸厚重，營造光影對比與質感層次，呈現傳統畫布上的藝術感與古典氛圍。",
+        "prompt": "oil painting style with visible, expressive brushstrokes and thick impasto texture; rich, warm color palette with deep shadows and soft highlights; layered paint texture creating depth and tactile feel; painterly realism combining dramatic light contrast and organic color transitions; overall composed like a traditional oil-on-canvas masterpiece.",
+        "thumbnail": "oil_painting.png"
+    },
+    {
+        "style_name": "復古漫畫",
+        "introduction": "模仿舊時期漫畫印刷的質感，線條分明、色彩柔和。",
+        "prompt": "comic book style,  cartoon character,  muted colors,  illustration,  detailed,  hyperrealistic,  impressionistic,  perspective,  outlines,  soft shadows,  simple background,  comic panel,  vintage illustration style,  retro,",
+        "thumbnail": "vintage_comic.png"
+    },
+    {
+        "style_name": "像素電玩",
+        "introduction": "以低解析度方塊像素構成，充滿 8-bit 電玩遊戲的復古感。",
+        "prompt": "Creating art using pixels ,in a retro or 8-bit style, used in games and digital media.low-res, blocky, pixel art style, 8-bit graphics.",
+        "thumbnail": "pixel_game.png"
+    },
+    {
+        "style_name": "水墨風格",
+        "introduction": "運用墨筆的暈染與留白技巧，畫面淡雅而富含詩意，展現東方藝術的空靈與含蓄之美。",
+        "prompt": "elegant calligraphic brushstrokes and fluid ink-wash textures; delicate balance of monochrome and subtle color accents; refined composition drawing on symbolism and harmony; minimalist yet expressive forms, poetic and serene tonal mood.",
+        "thumbnail": "ink_wash.png"
+    }
+]

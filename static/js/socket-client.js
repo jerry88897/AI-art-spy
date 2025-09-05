@@ -272,9 +272,10 @@ class SocketClient {
         this.send('topic_vote_start');
     }
 
-    submitDrawingPrompt(prompt) {
+    submitDrawingPrompt(prompt, selectedStyle) {
         this.send('submit_drawing_prompt', {
-            prompt: prompt
+            prompt: prompt,
+            selected_style: selectedStyle
         });
     }
 
@@ -319,8 +320,8 @@ window.submitSelectedTopic = (topicId) => {
     });
 }
 
-window.submitDrawingPrompt = (prompt) => {
-    window.socketClient.submitDrawingPrompt(prompt);
+window.submitDrawingPrompt = (prompt, selectedStyle) => {
+    window.socketClient.submitDrawingPrompt(prompt, selectedStyle);
 };
 
 window.submitSelectedArt = (artId) => {

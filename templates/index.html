@@ -118,17 +118,33 @@
                     </div>
                 </div>
                 <div class="drawing-area" id="drawing-interface">
-                    <div class="drawing-tips" id="drawing-tips"></div>
-                    <div class="subject-vote-area" id="subject-vote-area">
+                    <div class="drawing-area-container">
+                        <div class="drawing-tips" id="drawing-tips"></div>
+                        <div class="subject-vote-area" id="subject-vote-area">
+                        </div>
+                        <div class="subject-announcement-area" id="subject-announcement-area">
+                        </div>
+                        <div class="drawing-input-area" id="drawing-input-area">
+                            <input class="text-input prompt-input" type="text" id="prompt-text" name="prompt-text"
+                                maxlength="30" size="30" placeholder="想繪製的內容..." />
+                            <div class="style-option" id="selected-style"><img class="style-option-img"
+                                    id="selected-style-image" src="../static/images/styles/real_photo.png">
+                                <div class="style-introduction-block">
+                                    <div class="style-option-name" id="selected-style-name"></div>
+                                    <div class="style-option-introduction" id="selected-style-introduction"></div>
+                                </div>
+                            </div>
+                            <div class="drawing-controls">
+                                <button id="submit-order" class="btn btn-warning">提交訂單</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="subject-announcement-area" id="subject-announcement-area">
-                    </div>
-                    <div class="drawing-input-area" id="drawing-input-area">
-                        <input class="text-input prompt-input" type="text" id="prompt-text" name="prompt-text"
-                            maxlength="30" size="30" placeholder="想繪製的內容..." />
-                        <div class="drawing-controls">
-                            <button id="select-style" class="btn btn-warning">畫風選擇</button>
-                            <button id="submit-order" class="btn btn-primary">提交訂單</button>
+                    <div class="style-selection-area" id="style-selection-area">
+                        <div class="style-selection-header">
+                            <span class="style-selection-title">選擇畫風</span>
+                        </div>
+                        <div class="style-options-container" id="style-options-container">
+                            <!-- 風格選項將通過 JavaScript 動態生成 -->
                         </div>
                     </div>
                 </div>
