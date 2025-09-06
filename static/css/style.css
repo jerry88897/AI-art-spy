@@ -2184,3 +2184,29 @@ p {
 
     width: 115px;
 }
+
+.zoomed-art-container {
+    position: absolute;
+    z-index: 101;
+
+    display: none;
+}
+
+.zoomed-art-block {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.zoomed-art-image {
+    position: absolute;
+
+    width: 550px;
+}
+
+.zoomed-art-frame {
+    z-index: 100;
+
+    width: 895px;
+}

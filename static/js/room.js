@@ -358,13 +358,15 @@ class RoomPage {
         const playerIndex = data.players.findIndex(p => p.id === data.player_id);
         const player = data.players[playerIndex];
         const creatorArtPlace = document.getElementById(`player${playerIndex + 1}-art`);
+
+        const inGameArtImage = document.createElement('img');
+        const inGameArtFrame = document.createElement('img');
+
         if (creatorArtPlace) {
             const inGameArtImageBlock = document.createElement('div');
             inGameArtImageBlock.className = 'in-game-player-art-block';
-            const inGameArtImage = document.createElement('img');
             inGameArtImage.src = `data:image/png;base64,${data.selected_art}`;
             inGameArtImage.className = 'in-game-player-art-img';
-            const inGameArtFrame = document.createElement('img');
             inGameArtFrame.src = '../static/images/frame/default.png';
             inGameArtFrame.className = 'in-game-player-art-frame';
             inGameArtImageBlock.appendChild(inGameArtImage);
@@ -373,6 +375,20 @@ class RoomPage {
         }
         showingCreatorName.textContent = player ? `${player.name} 的作品` : '未知玩家的作品';
         this.showArea('art-show-area')
+        inGameArtFrame.addEventListener('mouseenter', () => {
+            const zoomedArtContainer = document.getElementById('zoomed-art-container');
+            const zoomedArtImage = document.getElementById('zoomed-art-image');
+            zoomedArtImage.src = `data:image/png;base64,${data.selected_art}`;
+            const zoomedArtFrame = document.getElementById('zoomed-art-frame');
+            zoomedArtFrame.src = '../static/images/frame/default.png';
+            zoomedArtContainer.style.display = 'flex';
+        });
+
+        inGameArtFrame.addEventListener('mouseleave', () => {
+            const zoomedArtContainer = document.getElementById('zoomed-art-container');
+            zoomedArtContainer.style.display = 'none';
+        });
+
     }
 
     handleStartShowing(data) {
