@@ -135,6 +135,60 @@
                                 </div>
                             </div>
                             <div class="drawing-controls">
+                                <div id="slot">
+                                    <div id="paper-holder">
+                                        <div id="paper">
+                                            <div class="receipt-content-title receipt-content-bold">RECEIPT 收據</div>
+                                            <div class="receipt-store-name">AI亂畫資訊有限公司</div>
+                                            <div class="receipt-item">
+                                                <div class="receipt-info-title">連線時間:</div>
+                                                <div class="receipt-info-content" id="connection-time"></div>
+                                            </div>
+                                            <div class="receipt-item">
+                                                <div class="receipt-info-title">授權碼:</div>
+                                                <div class="receipt-info-content" id="authorization-code"></div>
+                                            </div>
+
+                                            <div class="receipt-separator">-------------------------------</div>
+
+                                            <div class="receipt-item">
+                                                <div class="receipt-content">GPU computing Fee</div>
+                                                <div class="receipt-content">0.00</div>
+                                            </div>
+                                            <div class="receipt-item">
+                                                <div class="receipt-text" id="receipt-prompt"></div>
+                                                <div class="receipt-content">x1</div>
+                                            </div>
+                                            <div class="receipt-item">
+                                                <div class="receipt-content">Custom Style Fee</div>
+                                                <div class="receipt-content">0.00</div>
+                                            </div>
+                                            <div class="receipt-item">
+                                                <div class="receipt-text" id="receipt-style"></div>
+                                                <div class="receipt-content">x1</div>
+                                            </div>
+
+                                            <div class="receipt-separator">-------------------------------</div>
+
+                                            <div class="total-section">
+                                                <div class="receipt-item">
+                                                    <div class="receipt-content">金額 AMOUNT:</div>
+                                                    <div class="receipt-content-title receipt-content-bold">NT$ 0.00
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="receipt-separator">-------------------------------</div>
+
+                                            <div class="receipt-content">狀態: 已送件</div>
+                                            <div class="receipt-content">進度查詢</div>
+                                            <img class="qrcode"
+                                                src="{{ url_for('static', filename='images/qrcode.svg') }}" height="80"
+                                                width="80" />
+                                            <div class="receipt-content">*** 客戶收據 CUSTOMER COPY ***</div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <button id="submit-order" class="btn btn-warning">提交訂單</button>
                             </div>
                         </div>

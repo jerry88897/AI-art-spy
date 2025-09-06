@@ -12,6 +12,7 @@ class RoomPage {
         this.timeBeforeCelebration = 4000;
 
         this.hasChooseTopic = false;
+        this.hasSendPrompt = false;
         this.hasChooseArt = false;
         this.hasVoteSpy = false;
         this.hasGuessedTopic = false;
@@ -291,6 +292,12 @@ class RoomPage {
     handleWriteDrawingPrompt() {
         const promptInput = document.getElementById('prompt-text');
         const drawingTips = document.getElementById('drawing-tips');
+        this.hasSendPrompt = false;
+        document.getElementById('submit-order').disabled = false;
+        document.getElementById('prompt-text').removeAttribute("disabled");
+
+        document.getElementById('paper-holder').classList.remove('print');
+
         if (this.IamSpy) {
             drawingTips.innerHTML = '你是間諜，根據主題畫出模稜兩可的圖片<br>裝作你也知道關鍵字';
         } else {
@@ -421,6 +428,8 @@ class RoomPage {
         const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
         wait(this.timeBeforeShowVoteCount)
             .then(() => {
+                const realSpyInterface = document.getElementById('real-spy-interface');
+                realSpyInterface.innerHTML = '';
                 this.showInterface('real-spy-interface');
                 this.generateVoteCountDetail(data);
                 this.spyId = data.spy_is;
@@ -1380,6 +1389,17 @@ class RoomPage {
             return;
         }
 
+        document.getElementById('connection-time').textContent = new Date().toLocaleString('zh-TW', {
+            hour12: false
+        }).replace(',', '');
+        document.getElementById('authorization-code').textContent = Math.floor(100000 + Math.random() * 900000).toString();
+        document.getElementById('receipt-prompt').textContent = '- ' + prompt;
+        document.getElementById('receipt-style').textContent = '- ' + this.styles[this.selectedStyle].style_name;
+        document.getElementById('paper-holder').classList.add('print');
+        document.getElementById('submit-order').disabled = true;
+        promptInput.setAttribute("disabled", "true");
+        this.hasSendPrompt = true;
+
         window.socketClient.submitDrawingPrompt(prompt, this.selectedStyle);
     }
 
@@ -1395,6 +1415,7 @@ class RoomPage {
     }
 
     showStyleSelection() {
+        if (this.hasSendPrompt) return;
         const styleSelectionArea = document.getElementById('style-selection-area');
         if (styleSelectionArea) {
             styleSelectionArea.style.display = 'flex';
