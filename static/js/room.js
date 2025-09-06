@@ -489,7 +489,7 @@ class RoomPage {
             // 頭像圖片
             const img = document.createElement('img');
             img.className = 'in-game-avatar-img';
-            img.src = `../static/images/avatar/${player.avatar_id}.png`;
+            img.src = `../static/images/avatar/${player.avatar_id}.jpg`;
             img.alt = `${player.name || 'Unknown'} 的頭像`;
             avatarDiv.appendChild(img);
 
@@ -559,7 +559,7 @@ class RoomPage {
 
         const avatarImg = document.createElement('img');
         avatarImg.className = 'player-avatar-img';
-        avatarImg.src = `../static/images/avatar/${player.avatar_id}.png`;
+        avatarImg.src = `../static/images/avatar/${player.avatar_id}.jpg`;
         avatarImg.alt = `${player.name} 的頭像`;
         avatarImg.id = `avatar-img-${player.id}`;
 
@@ -693,13 +693,13 @@ class RoomPage {
             const avatarOptionimg = document.createElement('img');
             avatarOptionimg.className = 'avatar-option';
             avatarOptionimg.id = `avatar-option-${i}`;
-            avatarOptionimg.src = `../static/images/avatar/${i}.png`;
+            avatarOptionimg.src = `../static/images/avatar/${i}.jpg`;
             avatarContainer.appendChild(avatarOptionimg);
             avatarOptionimg.addEventListener('click', () => {
                 window.changeAvatar(i);
                 const myAvatarImg = document.getElementById(`avatar-img-${this.myPlayerId}`);
                 if (myAvatarImg) {
-                    myAvatarImg.src = `../static/images/avatar/${i}.png`;
+                    myAvatarImg.src = `../static/images/avatar/${i}.jpg`;
                 }
                 const avatarSelectContainer = document.getElementById('avatar-select-container');
                 if (avatarSelectContainer) {
@@ -842,7 +842,7 @@ class RoomPage {
                     voteItem.className = 'vote-item';
                     const voterImage = document.createElement('img');
                     voterImage.className = 'voter-image';
-                    voterImage.src = `../static/images/avatar/${voter?.avatar_id}.png`;
+                    voterImage.src = `../static/images/avatar/${voter?.avatar_id}.jpg`;
                     voteItem.appendChild(voterImage);
                     const voterName = document.createElement('div');
                     voterName.className = 'voter-name';
@@ -891,7 +891,7 @@ class RoomPage {
                 body.classList.remove('body-dark');
                 gametableContainer.classList.remove('gametable-container-dark');
                 const spyAvatar = document.createElement('img');
-                spyAvatar.src = `../static/images/avatar/${spy.avatar_id}.png`;
+                spyAvatar.src = `../static/images/avatar/${spy.avatar_id}.jpg`;
                 spyAvatar.className = 'real-spy-avatar';
 
 
@@ -1093,7 +1093,7 @@ class RoomPage {
             winnerElement.className = 'winner-avatar';
             const img = document.createElement('img');
             img.className = 'winner-avatar-img bounce';
-            img.src = `../static/images/avatar/${winner.avatar_id}.png`;
+            img.src = `../static/images/avatar/${winner.avatar_id}.jpg`;
             winnerElement.appendChild(img);
             const nameDiv = document.createElement('div');
             nameDiv.textContent = winner.name;
@@ -1260,7 +1260,7 @@ class RoomPage {
             playerStatus.id = `gallery-player-status-item-${player.id}`;
             const playerStatusImg = document.createElement('img');
             playerStatusImg.className = 'player-status-img';
-            playerStatusImg.src = "../static/images/avatar/" + player.avatar_id + ".png";
+            playerStatusImg.src = "../static/images/avatar/" + player.avatar_id + ".jpg";
             playerStatus.appendChild(playerStatusImg);
             const playerStatusSymbol = document.createElement('div');
             playerStatusSymbol.className = 'player-status-symbol';
