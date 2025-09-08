@@ -236,6 +236,10 @@ def upload_images():
                 'message': '部分檔案未成功上傳'
             }), 400
         elif fileNo == len(files):
+            socketio.emit('player_status_update', {
+                'player_id': player_id,
+                'status': "finished"
+            }, room=room_id)
             last_submitted_data.isDrawFinished = True
             allDrawFinish = room.check_all_drawing_finished(int(round_number))
             if allDrawFinish:
@@ -724,6 +728,10 @@ def handle_topic_voted(data=None):
         voted_topic_no = data['selected_topic_no']
         room.topicVoteCount[voted_topic_no] += 1
         player.topic_voted = True
+        socketio.emit('player_status_update', {
+            'player_id': player_id,
+            'status': "finished"
+        }, room=room_id)
         # 檢查是否所有玩家都投票完成
         if all(p.topic_voted for p in room.players):
             # 計算投票結果
@@ -810,6 +818,10 @@ def handle_submit_drawing_prompt(data):
 
         # 通知開始繪圖
         emit('drawing_started', {'message': 'AI 正在為您繪圖，請稍候...'})
+        socketio.emit('player_status_update', {
+            'player_id': player_id,
+            'status': "sended"
+        }, room=room_id)
 
         player.submitted_data.append(SubmittedData(current_round, prompt))
 
@@ -1025,6 +1037,11 @@ def handle_submit_vote(data):
 
         voter = room.get_player(player_id)
         logger.info(f'投票: {voter.name} -> {voted_player.name}')
+
+        socketio.emit('player_status_update', {
+            'player_id': player_id,
+            'status': "finished"
+        }, room=room_id)
 
         # 檢查是否所有玩家都投票完成
         if len(room.votes) == len(room.players):

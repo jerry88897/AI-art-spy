@@ -129,6 +129,16 @@
     /* 直到下一次循環都靜止 */
 }
 
+@keyframes wave-step {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(-30deg);
+    }
+}
+
 @keyframes high-light {
     0% {
         background-color: var(--focus-color);
@@ -345,6 +355,11 @@
 
 .gelatine {
     animation: gelatine 2s infinite;
+}
+
+.wave-step {
+    animation: wave-step 1.5s infinite;
+    animation-timing-function: steps(2, end);
 }
 
 .high-light {

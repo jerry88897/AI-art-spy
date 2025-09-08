@@ -125,6 +125,10 @@ class SocketClient {
             }
             window.roomPage.handleGameStarted(data)
         });
+        this.socket.on('player_status_update', (data) => {
+            console.log('玩家狀態更新:', data);
+            window.roomPage.setPlayerStatusSvg(data.player_id, data.status);
+        });
         this.socket.on('write_drawing_prompt', (data) => {
             console.log('撰寫繪圖提示:', data);
             window.roomPage.handleWriteDrawingPrompt(data)

@@ -230,6 +230,7 @@ class RoomPage {
         if (!data) return;
         this.hasChooseTopic = false;
         this.drawInGamePlayersDisplay(data.players);
+        this.hideAllPlayerStatusSvg();
         this.showContainer('gametable-container');
         const drawingTips = document.getElementById('drawing-tips');
         drawingTips.innerHTML = '投票選出主題';
@@ -244,16 +245,28 @@ class RoomPage {
                 if (window.submitSelectedTopic && !this.hasChooseTopic) {
                     window.submitSelectedTopic(index);
                     this.hasChooseTopic = true;
+                    const allTopics = document.querySelectorAll('.topic-item');
+                    for (let i = 0; i < allTopics.length; i++) {
+                        if (i === index) {
+                            allTopics[i].classList.add('topic-item-selected');
+                            allTopics[i].classList.remove('topic-item');
+                        } else {
+                            allTopics[i].classList.add('topic-item-not-selected');
+                            allTopics[i].classList.remove('topic-item');
+                        }
+                    }
                 }
             });
             topicArea.appendChild(topicItem);
         });
         this.showInterface('drawing-interface');
         this.showArea('subject-vote-area');
+        this.setAndShowAllPlayerStatusSvg('waiting')
     }
 
     // 處理遊戲開始
     handleGameStarted(data) {
+        this.hideAllPlayerStatusSvg();
         console.log('Game started:', data);
 
         if (!data) return;
@@ -307,6 +320,7 @@ class RoomPage {
         if (promptInput) {
             promptInput.value = '';
         }
+        this.setAndShowAllPlayerStatusSvg('drawing')
         this.showArea('drawing-input-area');
         this.showInterface('drawing-interface')
     }
@@ -399,12 +413,14 @@ class RoomPage {
     }
 
     handleStartShowing(data) {
+        this.hideAllPlayerStatusSvg();
         const artDisplayTips = document.getElementById('art-display-tips');
         if (data.show_art_order[data.now_showing] == this.myPlayerId) {
             artDisplayTips.innerHTML = 'AI驕傲地完成了創作<br>請選擇一個想展示的作品';
             this.showArea('art-select-area')
         } else {
-            artDisplayTips.innerHTML = '正在等待其他玩家選擇繪圖...';
+            let player = data.players.find(p => p.id === data.show_art_order[data.now_showing]);
+            artDisplayTips.innerHTML = `正在等待 ${player.name} 選擇繪圖...`;
             this.showArea('art-waiting-area')
         }
         this.showInterface('art-display-interface')
@@ -420,11 +436,13 @@ class RoomPage {
 
     handleStartVotingSpy(data) {
         this.hasVoteSpy = false;
+        this.setAndShowAllPlayerStatusSvg('waiting');
         this.generateSpyVotingInterface(data.players);
         this.showInterface('spy-voting-interface');
     }
 
     handleSpyVoteResult(data) {
+        this.hideAllPlayerStatusSvg();
         const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
         wait(this.timeBeforeShowVoteCount)
             .then(() => {
@@ -495,12 +513,31 @@ class RoomPage {
             avatarDiv.className = 'in-game-player-avatar';
             avatarDiv.id = `player${playerNum}-avatar`;
 
+            // 頭像圖片容器
+            const avatarContainer = document.createElement('div');
+            avatarContainer.className = 'in-game-avatar-container';
+
             // 頭像圖片
             const img = document.createElement('img');
             img.className = 'in-game-avatar-img';
             img.src = `../static/images/avatar/${player.avatar_id}.jpg`;
             img.alt = `${player.name || 'Unknown'} 的頭像`;
-            avatarDiv.appendChild(img);
+
+            // SVG 圖片
+            const svgDiv = document.createElement('div');
+            svgDiv.className = 'in-game-avatar-svg-div wave-step';
+
+            const svg = document.createElement('img');
+            svg.className = 'in-game-avatar-svg';
+            svg.id = `avatar-svg-${player.id}`;
+
+            // 將圖片和 SVG 添加到容器
+            avatarContainer.appendChild(img);
+            svgDiv.appendChild(svg);
+            avatarContainer.appendChild(svgDiv);
+
+            // 將容器添加到 avatarDiv
+            avatarDiv.appendChild(avatarContainer);
 
             // 玩家名稱
             const nameDiv = document.createElement('div');
@@ -526,6 +563,42 @@ class RoomPage {
             }
         }
     }
+
+    setPlayerStatusSvg(playerId, status) {
+        const svg = document.getElementById(`avatar-svg-${playerId}`);
+        if (!svg) return;
+
+        if (status === 'drawing') {
+            svg.src = '../static/images/icons/Edit.svg';
+        } else if (status === 'waiting') {
+            svg.src = '../static/images/icons/Question.svg';
+        } else if (status === 'sended') {
+            svg.src = '../static/images/icons/Bot.svg';
+        } else if (status === 'finished') {
+            svg.src = '../static/images/icons/Checkmark.svg';
+        } else {
+            svg.src = '';
+        }
+    }
+    setAndShowAllPlayerStatusSvg(status) {
+        this.players.forEach(player => {
+            this.setPlayerStatusSvg(player.id, status);
+        });
+        this.showAllPlayerStatusSvg();
+    }
+    hideAllPlayerStatusSvg() {
+        const svgs = document.querySelectorAll('.in-game-avatar-svg-div');
+        svgs.forEach(svg => {
+            svg.style.display = 'none';
+        });
+    }
+    showAllPlayerStatusSvg() {
+        const svgs = document.querySelectorAll('.in-game-avatar-svg-div');
+        svgs.forEach(svg => {
+            svg.style.display = 'flex';
+        });
+    }
+
     updatePlayersDisplay() {
         const playersGrid = document.getElementById('players-grid');
         if (!playersGrid) {
