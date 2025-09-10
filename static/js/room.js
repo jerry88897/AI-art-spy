@@ -9,7 +9,7 @@ class RoomPage {
         this.RouletteTime = 5000;
         this.timeBeforeShowRealTopic = 3000;
         this.timeBeforeShowResult = 3000;
-        this.timeBeforeCelebration = 4000;
+        this.timeBeforeCelebration = 3000;
 
         this.hasChooseTopic = false;
         this.hasSendPrompt = false;
@@ -32,9 +32,12 @@ class RoomPage {
         this.myPlayerId = data.player.id;
         this.IamSpy = false;
         this.spyId = null;
+
+        this.nowDisplayingContainer = 'room-container';
         this.homepage_container = document.getElementById('homepage-container');
         this.room_container = document.getElementById('room-container');
         this.gametable_container = document.getElementById('gametable-container');
+        this.gallery_container = document.getElementById('gallery-container');
         this.submitDrawingPromptBtn = document.getElementById('submit-order');
 
         this.container = [
@@ -56,8 +59,8 @@ class RoomPage {
             'game-result-interface'
         ];
         this.areas = [
-            'subject-vote-area',
-            'subject-announcement-area',
+            'topic-vote-area',
+            'topic-announcement-area',
             'drawing-input-area',
             'art-select-area',
             'art-show-area'
@@ -89,9 +92,13 @@ class RoomPage {
 
     // 初始化房間
     initializeRoom() {
-        this.homepage_container.style.display = 'none';
+        this.homepage_container.style.display = 'flex';
         this.room_container.style.display = 'flex';
         this.gametable_container.style.display = 'none';
+        this.gallery_container.style.display = 'none';
+
+        this.homepage_container.classList.add('bounce-out-left');
+        this.room_container.classList.add('bounce-in-right');
 
         this.generateAvatarSelection(this.AVATAR_COUNT);
         // 修正: 使用 GameUtils.hideLoading() 而不是 hideLoading()
@@ -228,13 +235,19 @@ class RoomPage {
     // 處理開始投票主題
     handleStartVotingTopic(data) {
         if (!data) return;
+
+        const topicDisplay = document.getElementById('topic-display');
+        const keyWordDisplay = document.getElementById('keyWord-display');
+        topicDisplay.style.display = 'none';
+        keyWordDisplay.style.display = 'none';
+
         this.hasChooseTopic = false;
         this.drawInGamePlayersDisplay(data.players);
         this.hideAllPlayerStatusSvg();
         this.showContainer('gametable-container');
         const drawingTips = document.getElementById('drawing-tips');
         drawingTips.innerHTML = '投票選出主題';
-        const topicArea = document.getElementById('subject-vote-area');
+        const topicArea = document.getElementById('topic-vote-area');
         topicArea.innerHTML = '';
         data.topics.forEach((topic, index) => {
             const topicItem = document.createElement('div');
@@ -251,7 +264,7 @@ class RoomPage {
                             allTopics[i].classList.add('topic-item-selected');
                             allTopics[i].classList.remove('topic-item');
                         } else {
-                            allTopics[i].classList.add('topic-item-not-selected');
+                            allTopics[i].classList.add('topic-disabled');
                             allTopics[i].classList.remove('topic-item');
                         }
                     }
@@ -260,7 +273,7 @@ class RoomPage {
             topicArea.appendChild(topicItem);
         });
         this.showInterface('drawing-interface');
-        this.showArea('subject-vote-area');
+        this.showArea('topic-vote-area');
         this.setAndShowAllPlayerStatusSvg('waiting')
     }
 
@@ -272,17 +285,16 @@ class RoomPage {
         if (!data) return;
 
         this.IamSpy = data.is_spy;
-        this.showContainer('gametable-container');
 
-        //缺展示提詞畫面
-        this.styles = data.styles || null;
-        this.generateStyleSelection(data.styles);
-        this.updateSelectedStyle();
-        this.handleTopicAndKeyWordDisplay(data)
-        this.handleWriteDrawingPrompt()
-        //this.updateProgressIndicator(1);
-
-        GameUtils.showSuccess('遊戲開始！請根據您的角色輸入繪圖提詞');
+        this.generatetopicAnnouncementInterface(data)
+            .then(() => {
+                this.styles = data.styles || null;
+                this.generateStyleSelection(data.styles);
+                this.updateSelectedStyle();
+                this.handleTopicAndKeyWordDisplay(data);
+                this.handleWriteDrawingPrompt();
+                GameUtils.showSuccess('遊戲開始！請根據您的角色輸入繪圖提詞');
+            });
     }
     handleTopicAndKeyWordDisplay(data) {
         const topicDisplay = document.getElementById('topic-display');
@@ -299,6 +311,8 @@ class RoomPage {
         }
         topicDisplay.style.display = 'flex';
         keyWordDisplay.style.display = 'flex';
+        topicDisplay.classList.add('bounce-in')
+        keyWordDisplay.classList.add('bounce-in');
     }
 
     // 處理輸入繪圖提詞開始
@@ -314,7 +328,7 @@ class RoomPage {
         if (this.IamSpy) {
             drawingTips.innerHTML = '你是間諜，根據主題畫出模稜兩可的圖片<br>裝作你也知道關鍵字';
         } else {
-            drawingTips.innerHTML = '你是畫家，畫出跟關鍵字相關的圖片<br>但留點模糊空間，不要讓對手猜到關鍵字';
+            drawingTips.innerHTML = '你是畫家，畫出跟關鍵字相關的圖片<br>但留點模糊空間，不要讓間諜猜到關鍵字';
         }
 
         if (promptInput) {
@@ -364,6 +378,8 @@ class RoomPage {
         const showingCreatorName = document.getElementById('showing-creator-name');
         const artImage = document.createElement('img');
 
+        const artDisplayTips = document.getElementById('art-display-tips');
+
         artShowContent.innerHTML = '';
 
         if (artImage && data.selected_art) {
@@ -395,6 +411,16 @@ class RoomPage {
             creatorArtPlace.appendChild(inGameArtImageBlock);
         }
         showingCreatorName.textContent = player ? `${player.name} 的作品` : '未知玩家的作品';
+
+
+        const tips = [
+            `${player.name} 與 AI 驕傲地展示他們的作品`,
+            `${player.name} 的創作靈感來自於希望與夢想`,
+            `${player.name} 的作品充滿了藝術的靈魂與激情`,
+            `${player.name} 的畫作展現了他獨特的視角與風格`,
+        ];
+        artDisplayTips.textContent = tips[Math.floor(Math.random() * tips.length)];
+
         this.showArea('art-show-area')
         inGameArtFrame.addEventListener('mouseenter', () => {
             const zoomedArtContainer = document.getElementById('zoomed-art-container');
@@ -416,11 +442,17 @@ class RoomPage {
         this.hideAllPlayerStatusSvg();
         const artDisplayTips = document.getElementById('art-display-tips');
         if (data.show_art_order[data.now_showing] == this.myPlayerId) {
-            artDisplayTips.innerHTML = 'AI驕傲地完成了創作<br>請選擇一個想展示的作品';
+            const tips = [
+                `AI 覺得他畫出了畢卡索的靈魂`,
+                `AI 榨乾了所有的GPU為你畫好了`,
+                `AI 覺得自己當初應該攻讀美術系`,
+                `AI 受到宇宙的啟發創作了這些作品`,
+            ];
+            artDisplayTips.innerHTML = `${tips[Math.floor(Math.random() * tips.length)]}<br>請選擇一個想展示的作品`;
             this.showArea('art-select-area')
         } else {
             let player = data.players.find(p => p.id === data.show_art_order[data.now_showing]);
-            artDisplayTips.innerHTML = `正在等待 ${player.name} 選擇繪圖...`;
+            artDisplayTips.innerHTML = `正在等待 <div class="drawing-tips-highlight">${player.name}</div> 選擇繪圖...`;
             this.showArea('art-waiting-area')
         }
         this.showInterface('art-display-interface')
@@ -699,9 +731,20 @@ class RoomPage {
         this.container.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                element.style.display = (id === containerName) ? 'flex' : 'none';
+                if (id === this.nowDisplayingContainer) {
+                    element.classList.remove('bounce-in-right');
+                    element.classList.add('bounce-out-left');
+                    element.style.display = 'flex';
+                } else if (id === containerName) {
+                    element.classList.remove('bounce-out-left');
+                    element.classList.add('bounce-in-right');
+                    element.style.display = 'flex';
+                } else {
+                    element.style.display = 'none';
+                }
             }
         });
+        this.nowDisplayingContainer = containerName;
     }
 
     // 只顯示指定的界面
@@ -761,6 +804,67 @@ class RoomPage {
             </div>
         </div>
     `;
+    }
+
+    generatetopicAnnouncementInterface(data) {
+        this.showArea('topic-announcement-area');
+        const topicAnnouncementArea = document.getElementById('topic-announcement-area');
+        if (!topicAnnouncementArea || !data) return;
+
+        // 清空之前的內容
+        topicAnnouncementArea.innerHTML = '';
+
+        const topicResult = document.createElement('div');
+        topicResult.className = 'topic-announcement-block';
+        topicAnnouncementArea.appendChild(topicResult);
+
+        return new Promise((resolve) => {
+            const topicDiv = document.createElement('div');
+            topicDiv.className = 'topic-announcement-display bounce-in';
+            topicDiv.id = 'topic-announcement-display';
+            topicDiv.innerHTML = `
+            <span class="topic-announcement-label">主題</span>
+            <span class="topic-announcement-value">${data.topic}</span>
+            <span class="topic-announcement-label">▲ 大家都看的到 ▲</span>
+        `;
+            topicResult.appendChild(topicDiv);
+
+            // 使用 Promise 來處理延遲
+            const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+            const keyWordDiv = document.createElement('div');
+            keyWordDiv.className = 'topic-announcement-display keyWord-display bounce-in';
+            keyWordDiv.id = 'key-word-announcement-display';
+
+            const roleResultDiv = document.createElement('div');
+            roleResultDiv.className = 'role-result bounce-in';
+            roleResultDiv.id = 'role-result';
+
+            wait(this.timeBeforeShowRealTopic)
+                .then(() => {
+
+                    keyWordDiv.innerHTML = `
+                    <span class="topic-announcement-label">關鍵字</span>
+                    <span class="topic-announcement-value">${data.keyword}</span>
+                    <span class="topic-announcement-label">▲ 不要讓間諜猜到 ▲</span>
+                `;
+                    topicResult.appendChild(keyWordDiv);
+                    return wait(this.timeBeforeShowResult);
+                })
+                .then(() => {
+                    roleResultDiv.textContent = data.is_spy ? '你是間諜!' : '你是畫家!';
+                    topicAnnouncementArea.appendChild(roleResultDiv);
+                    return wait(this.timeBeforeCelebration);
+                }).then(() => {
+                    topicDiv.classList.add('bounce-out');
+                    keyWordDiv.classList.add('bounce-out');
+                    roleResultDiv.classList.add('bounce-out');
+                    return wait(this.cleanUpTime);
+                }).then(() => {
+                    topicAnnouncementArea.innerHTML = '';
+                    resolve();
+                });
+        });
     }
 
     generateAvatarSelection(avatar_count) {
@@ -1140,8 +1244,6 @@ class RoomPage {
                     resolve();
                 });
         });
-
-
     }
 
     generateGameResult(data) {
@@ -1169,6 +1271,7 @@ class RoomPage {
                 resultMessage = '間諜小勝！';
             }
         }
+        window.poof(5000);
         gameResultTips.textContent = resultMessage;
         winners.forEach(winner => {
             const winnerElement = document.createElement('div');
