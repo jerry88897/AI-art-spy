@@ -1234,7 +1234,7 @@ if __name__ == '__main__':
         socketio.run(
             app,
             debug=True,  # 在生產環境中關閉 debug
-            host='127.0.0.1',
+            host='0.0.0.0',
             port=5566,
             log_output=True,
             allow_unsafe_werkzeug=True,

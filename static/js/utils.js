@@ -460,11 +460,6 @@ document.addEventListener('keydown', (e) => {
         });
         document.body.style.overflow = '';
     }
-
-    // M 切換音效
-    if (e.key.toLowerCase() === 'm' && !e.target.matches('input, textarea')) {
-        GameUtils.audio.toggle();
-    }
 });
 
 // 點擊模態框背景關閉

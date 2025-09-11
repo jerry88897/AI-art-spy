@@ -2,14 +2,16 @@
 class RoomPage {
     constructor(data) {
         //參數設定
+        this.timeBeforeShowTopic = 3000;
         this.timeBeforeShowVoteCount = 2000;
         this.timeBeforeShowVoteDetail = 2000;
         this.timeBeforeShowRealSpy = 3000;
         this.timeBeforeShowSpyGuess = 9000;
-        this.RouletteTime = 5000;
-        this.timeBeforeShowRealTopic = 3000;
+        this.RouletteTime = 6000;
+        this.timeBeforeShowRealTopic = 4200;
         this.timeBeforeShowResult = 3000;
         this.timeBeforeCelebration = 3000;
+        this.timeBeforeGallery = 10000;
 
         this.hasChooseTopic = false;
         this.hasSendPrompt = false;
@@ -249,6 +251,11 @@ class RoomPage {
         drawingTips.innerHTML = '投票選出主題';
         const topicArea = document.getElementById('topic-vote-area');
         topicArea.innerHTML = '';
+        // 定義 mouseenter handler
+        function topicMouseEnterHandler() {
+            window.playGameSound.hover();
+        }
+
         data.topics.forEach((topic, index) => {
             const topicItem = document.createElement('div');
             topicItem.className = 'topic-item';
@@ -267,9 +274,12 @@ class RoomPage {
                             allTopics[i].classList.add('topic-disabled');
                             allTopics[i].classList.remove('topic-item');
                         }
+                        // 正確移除 mouseenter handler
+                        allTopics[i].removeEventListener('mouseenter', topicMouseEnterHandler);
                     }
                 }
             });
+            topicItem.addEventListener('mouseenter', topicMouseEnterHandler);
             topicArea.appendChild(topicItem);
         });
         this.showInterface('drawing-interface');
@@ -337,6 +347,12 @@ class RoomPage {
         this.setAndShowAllPlayerStatusSvg('drawing')
         this.showArea('drawing-input-area');
         this.showInterface('drawing-interface')
+
+        if (this.IamSpy) {
+            window.playGameSound.spy_drawing();
+        } else {
+            window.playGameSound.artist_drawing();
+        }
     }
 
 
@@ -502,6 +518,7 @@ class RoomPage {
                 this.hasGuessedTopic = false;
                 this.generateSpyGuessInterface(data);
                 this.showInterface('spy-guess-interface');
+                window.playGameSound.spy_guess();
             });
     }
 
@@ -511,16 +528,26 @@ class RoomPage {
         this.showInterface('spy-guess-result-interface');
 
         const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-
+        window.playGameSound.stopMusic();
+        window.playGameSound.drum_roll();
         this.generateSpyGuessResultInterface(data)
             .then(() => {
                 this.generateGameResult(data);
                 this.showInterface('game-result-interface');
-                return wait(5000);
-            })
-            .then(() => {
+                window.playGameSound.game_end();
+                return wait(1000);
+            }).then(() => {
+                window.playGameSound.party_blower();
+
+                return wait(1000);
+            }).then(() => {
+                window.playGameSound.yay();
+                window.playGameSound.cheer();
+                return wait(this.timeBeforeGallery);
+            }).then(() => {
                 this.generateGallery(data.gallery);
                 this.showContainer('gallery-container');
+                window.playGameSound.gallery();
             });
     }
 
@@ -840,7 +867,7 @@ class RoomPage {
             roleResultDiv.className = 'role-result bounce-in';
             roleResultDiv.id = 'role-result';
 
-            wait(this.timeBeforeShowRealTopic)
+            wait(this.timeBeforeShowTopic)
                 .then(() => {
 
                     keyWordDiv.innerHTML = `
@@ -1048,10 +1075,12 @@ class RoomPage {
         const gametableContainer = document.getElementById('gametable-container');
         const realSpyInterface = document.getElementById('real-spy-interface');
         realSpyInterface.innerHTML = '';
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
         body.classList.add('body-dark');
         gametableContainer.classList.add('gametable-container-dark');
 
+        window.playGameSound.drum_roll();
         // 輪盤閃爍效果
         this.startAvatarRoulette().then(() => {
             // 創建新的提示元素
@@ -1096,6 +1125,14 @@ class RoomPage {
                 realSpyInterface.appendChild(realSpyTips);
                 realSpyInterface.appendChild(realSpyDisplay);
                 realSpyInterface.appendChild(realSpyBanner);
+            }
+            window.playGameSound.gasp();
+            return wait(1000);
+        }).then(() => {
+            if (data.guess_spy_correct === true) {
+                window.playGameSound.vote_spy_correct();
+            } else {
+                window.playGameSound.vote_spy_wrong();
             }
         });
     }
@@ -1167,6 +1204,9 @@ class RoomPage {
             spyGuessTips.innerHTML = `${spy.name} 精湛的演技騙過了大家！<br>如果 ${spy.name} 猜對了關鍵字，將獲得完全勝利`;
         }
 
+        function guessOptionsMouseEnterHandler() {
+            window.playGameSound.hmmm();
+        }
         // 生成猜測選項
         const guessOptions = data.spy_options || [];
         guessOptions.forEach(option => {
@@ -1180,8 +1220,13 @@ class RoomPage {
                     if (window.submitGuess && !this.hasGuessedTopic) {
                         window.submitGuess(optionElement.textContent);
                         this.hasGuessedTopic = true;
+                        const allOptions = document.querySelectorAll('.guess-option');
+                        allOptions.forEach(opt => {
+                            opt.removeEventListener('mouseenter', guessOptionsMouseEnterHandler);
+                        });
                     }
                 });
+                optionElement.addEventListener('mouseenter', guessOptionsMouseEnterHandler);
             }
             spyGuessInterface.appendChild(optionElement);
         });

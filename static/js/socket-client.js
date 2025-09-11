@@ -10,6 +10,9 @@ class SocketClient {
         this.roomId = null;
         this.playerId = null;
         this.hasChooseImg = false;
+        this.isSpy = false;
+
+        this.showArtCount = 0;
 
     }
 
@@ -46,7 +49,7 @@ class SocketClient {
             GameUtils.hideLoading();
 
             if (window.playGameSound) {
-                window.playGameSound.playerJoined();
+                window.playGameSound.main_menu();
             }
         });
 
@@ -76,6 +79,7 @@ class SocketClient {
             GameUtils.gameState.setState('currentRoom', data.room_id);
             GameUtils.gameState.setState('currentPlayer', data.player);
             window.roomPage = new RoomPage(data);
+            window.playGameSound.room_waiting();
         });
 
         this.socket.on('join_room_success', (data) => {
@@ -84,8 +88,8 @@ class SocketClient {
             this.playerId = data.player.id;
             GameUtils.gameState.setState('currentRoom', data.room_id);
             GameUtils.gameState.setState('currentPlayer', data.player);
-
             window.roomPage = new RoomPage(data);
+            window.playGameSound.room_waiting();
         });
 
         this.socket.on('room_info', (data) => {
@@ -111,19 +115,20 @@ class SocketClient {
         });
 
         this.socket.on('start_voting_topic', (data) => {
+            this.showArtCount = 0;
             console.log('開始投票主題:', data);
             if (window.roomPage) {
                 window.roomPage.handleStartVotingTopic(data);
+                window.playGameSound.vote_topic();
             }
         });
 
         // 遊戲相關事件
         this.socket.on('game_started', (data) => {
             console.log('遊戲開始:', data);
-            if (window.playGameSound) {
-                window.playGameSound.gameStarted();
-            }
             window.roomPage.handleGameStarted(data)
+            this.isSpy = data.is_spy;
+            window.playGameSound.bell_multi();
         });
         this.socket.on('player_status_update', (data) => {
             console.log('玩家狀態更新:', data);
@@ -132,49 +137,54 @@ class SocketClient {
         this.socket.on('write_drawing_prompt', (data) => {
             console.log('撰寫繪圖提示:', data);
             window.roomPage.handleWriteDrawingPrompt(data)
+            this.showArtCount++;
         });
         this.socket.on('drawing_finished', (data) => {
             console.log('繪圖完成:', data);
-            this.send('get_myArt', null)
+            this.send('get_myArt', {});
         });
 
         this.socket.on('my_art', (data) => {
             console.log('收到繪圖:', data);
-            if (window.playGameSound) {
-                window.playGameSound.playerJoined();
-            }
             window.roomPage.handleMyArt(data);
-            this.send('art_received', null)
+            window.playGameSound.bell();
+            this.send('art_received', {});
         });
 
         this.socket.on('start_showing', (data) => {
             console.log('開始展示繪圖:', data);
             window.roomPage.handleStartShowing(data);
+            if (this.showArtCount % 2 === 0) {
+                window.playGameSound.show_art1();
+            } else {
+                window.playGameSound.show_art2();
+            }
         });
         this.socket.on('art_selected', (data) => {
             console.log('繪圖已選擇:', data);
             window.roomPage.handleArtSelected(data);
+            window.playGameSound.bell();
         });
         this.socket.on('start_voting_spy', (data) => {
             console.log('開始投票出間諜:', data);
             window.roomPage.handleStartVotingSpy(data);
+            window.playGameSound.vote_spy();
+
         });
         this.socket.on('voting_spy_result', (data) => {
             console.log('投票結果:', data);
             window.roomPage.handleSpyVoteResult(data);
+            window.playGameSound.stopMusic();
         });
         this.socket.on('game_ended', (data) => {
             console.log('遊戲結束:', data);
             const play_again_btn = document.getElementById('play-again-btn');
             play_again_btn.disabled = false;
-            if (window.playGameSound) {
-                const isVictory = data.winner === 'citizens' ? !data.spy_name : data.spy_name;
-                window.playGameSound.gameEnded(isVictory);
-            }
             window.roomPage.handleGameEnded(data);
         });
         this.socket.on('player_play_again', (data) => {
             window.roomPage.readyToPlayAgain(data.player_id);
+            window.playGameSound.ready_play_again();
         });
 
         // 錯誤處理
@@ -281,6 +291,7 @@ class SocketClient {
             prompt: prompt,
             selected_style: selectedStyle
         });
+        window.playGameSound.dot_printer();
     }
 
     submitVote(votedPlayerId) {
@@ -322,11 +333,8 @@ window.submitSelectedTopic = (topicId) => {
     window.socketClient.send('topic_voted', {
         'selected_topic_no': topicId
     });
+    window.playGameSound.bell();
 }
-
-window.submitDrawingPrompt = (prompt, selectedStyle) => {
-    window.socketClient.submitDrawingPrompt(prompt, selectedStyle);
-};
 
 window.submitSelectedArt = (artId) => {
     window.socketClient.send('selected_art', {
@@ -336,6 +344,7 @@ window.submitSelectedArt = (artId) => {
 
 window.submitVote = (votedPlayerId) => {
     window.socketClient.submitVote(votedPlayerId);
+    window.playGameSound.voted_spy();
 };
 
 window.submitGuess = (option) => {
