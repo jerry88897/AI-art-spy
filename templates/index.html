@@ -46,7 +46,7 @@
                     </div>
                     <div class="or-divider">
                         <div class="or-bar"></div>
-                        <p>或</p>
+                        <div>或</div>
                         <div class="or-bar"></div>
                     </div>
                     <div class="room-action">
@@ -60,7 +60,7 @@
                     </div>
                 </div>
             </div>
-            <button class="btn btn-info" id="rules-btn">
+            <button class="btn btn-info" id="rules-btn" onclick="showRules()">
                 遊戲規則
             </button>
         </div>
@@ -205,7 +205,7 @@
                 <div class="art-display-interface" id="art-display-interface">
                     <div class="drawing-tips" id="art-display-tips">正在等待其他玩家選擇繪圖...</div>
                     <div class="artwork-waiting" id="art-waiting-area">
-                        <div class="waiting-spinner"></div>
+                        <img src="../static/images/gpuCat.png" class="gpuCat wave-step">
                     </div>
                     <div class="art-select-area" id="art-select-area">
                     </div>
@@ -274,26 +274,180 @@
                 id="volume-icon">
             <input class="volume-slider" type="range" id="volume" min="0" max="50" value="0">
         </div>
+        <div class="rules-container" id="rules-container">
+            <div class="close-rules" onclick="hideRules()">
+                <img src="../static/images/icons/Dismiss.svg" class="close-icon" id="close-rules-icon">
+            </div>
+            <div class="rules-content">
+                <div class="rules-page-control">
+                    <img src="../static/images/icons/Left.svg" class="page-control" id="page-control-left"
+                        onclick="changeRulesPage(-1)">
+                </div>
+                <div class="rules-page" id="rules-page1">
+                    <div class="rules-text-area">
+                        <p>「AI亂畫害我輸」是一款結合了創意繪畫和社交推理的多人遊戲。</p>
+                    </div>
+                    <div class="rules-image-area">
+                        <img src="../static/images/rule/friends.png" id="friends-image">
+                    </div>
+                </div>
+                <div class="rules-page" id="rules-page2">
+                    <div class="rules-text-area">
+                        <p>每輪遊戲中，系統會隨機選出一名玩家作為間諜，其他玩家為畫家。</p>
+                    </div>
+                    <div class="rules-image-area">
+                        <div class="role-block">
+                            <img src="../static/images/rule/artist.png" id="role-artist">
+                            <div class="role-label">畫家</div>
+                        </div>
+                        <div class="role-block">
+                            <img src="../static/images/rule/pigSpy.png" id="role-spy">
+                            <div class="role-label">間諜</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rules-page" id="rules-page3">
+                    <div class="rules-text-area">
+                        <p>所有玩家會選出一個共同的主題，然而關鍵字只有畫家看的到，間諜無法得知。</p>
+                        <p>間諜必須通過觀察其他玩家的繪畫來猜測關鍵字。</p>
+                    </div>
+                    <div class="rules-image-area">
+                        <div class="topic-announcement-block">
+                            <div class="topic-announcement-display bounce-in" id="topic-announcement-display">
+                                <span class="topic-announcement-label">主題</span>
+                                <span class="topic-announcement-value">食物</span>
+                                <span class="topic-announcement-label">▲ 大家都看的到 ▲</span>
+                            </div>
+                            <div class="topic-announcement-display keyWord-display bounce-in"
+                                id="key-word-announcement-display">
+                                <span class="topic-announcement-label">關鍵字</span>
+                                <span class="topic-announcement-value">蘋果</span>
+                                <span class="topic-announcement-label">▲ 不要讓間諜猜到 ▲</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rules-page" id="rules-page4">
+                    <div class="rule-left-right">
+                        <div class="rule-block">
+                            <div class="rules-text-area">
+                                <p>所有玩家根據主題繪製數張圖畫。</p>
+                            </div>
+                            <div class="rules-image-area">
+                                <img src="../static/images/rule/art.png" id="rule-art-image">
+                            </div>
 
-    </div>
-    <div class="follow-interface" id="follow-interface">
-    </div>
+                        </div>
+                        <div class="rule-block">
+                            <div class="rules-text-area">
+                                <p>繪畫完成後，將展示一張選擇的作品。</p>
+                            </div>
+                            <div class="rules-image-area">
+                                <img src="../static/images/rule/showArt.png" id="rule-showArt-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rules-page" id="rules-page5">
+                    <div class="rule-left-right">
+                        <div class="rule-block">
+                            <div class="rules-text-area">
+                                <p>兩輪繪畫後，將投票選出最可疑的玩家。</p>
+                            </div>
+                            <div class="rules-image-area">
+                                <img src="../static/images/rule/vote.png" id="rule-vote-image">
+                            </div>
 
-    <script>
-        // 頁面載入完成後隱藏載入遮罩
-        window.addEventListener('load', function () {
-            hideLoading();
-            initParticles();
-        });
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"></script>
-    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/particles.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/room.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/socket-client.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/confetti.js') }}"></script>
+                        </div>
+                        <div class="rule-block">
+                            <div class="rules-text-area">
+                                <p>投票結束後，系統會揭曉間諜身份。</p>
+                            </div>
+                            <div class="rules-image-area">
+                                <img src="../static/images/rule/pigSpy.png" id="role-spy">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rules-page" id="rules-page6">
+                    <div class="rule-left-right">
+                        <div class="rule-block">
+                            <div class="rules-text-area">
+                                <p>如果間諜被識破，其他玩家暫時獲勝。</p>
+                            </div>
+                            <div class="rules-image-area">
+                                <img src="../static/images/rule/artistWin.png" id="rule-artistWin-image">
+                            </div>
+
+                        </div>
+                        <div class="rule-block">
+                            <div class="rules-text-area">
+                                <p>如果間諜未被識破，則間諜獲得勝利。</p>
+                            </div>
+                            <div class="rules-image-area">
+                                <img src="../static/images/rule/spyWin.png" id="rule-spyWin-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rules-page" id="rules-page7">
+                    <div class="rules-text-area">
+                        <p>接著，間諜將有一次機會猜出關鍵字</p>
+                    </div>
+                    <div class="rules-image-area">
+                        <img src="../static/images/rule/spyGuess.png" id="rule-spyGuess-image">
+                    </div>
+                </div>
+                <div class="rules-page" id="rules-page8">
+                    <div class="rules-text-area">
+                        <p>如果間諜沒能猜出關鍵字且已被識破，則畫家獲勝。</p>
+                    </div>
+                    <div class="rules-image-area">
+                        <img src="../static/images/rule/artistWin.png" id="rule-artistWin-image">
+                    </div>
+                </div>
+                <div class="rules-page" id="rules-page9">
+                    <div class="rules-text-area">
+                        <p>如果間諜猜出關鍵字但已被識破，則間諜逆轉勝。</p>
+                        <p>如果間諜猜出關鍵字且未被識破，則間諜大獲全勝。</p>
+                    </div>
+                    <div class="rules-image-area">
+                        <img src="../static/images/rule/spyWin.png" id="rule-spyWin-image">
+                    </div>
+                </div>
+                <div class="rules-page" id="rules-page10">
+                    <div class="rules-text-area">
+                        <p>遊戲結束後，滑鼠停在玩家的作品上，可以查看當時的指令及作品。</p>
+                    </div>
+                    <div class="rules-image-area">
+                        <img src="../static/images/rule/gallery.png" id="rule-gallery-image">
+                    </div>
+                </div>
+                <div class="rules-page-control">
+                    <img src="../static/images/icons/Right.svg" class="page-control" id="page-control-right"
+                        onclick="changeRulesPage(1)">
+                </div>
+            </div>
+
+        </div>
+        <div class="follow-interface" id="follow-interface">
+        </div>
+
+        <script>
+            // 頁面載入完成後隱藏載入遮罩
+            window.addEventListener('load', function () {
+                hideLoading();
+                initParticles();
+            });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"></script>
+        <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/room.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/socket-client.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/confetti.js') }}"></script>
 </body>
 
 </html>

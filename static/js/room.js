@@ -64,6 +64,7 @@ class RoomPage {
             'topic-vote-area',
             'topic-announcement-area',
             'drawing-input-area',
+            'art-waiting-area',
             'art-select-area',
             'art-show-area'
         ]

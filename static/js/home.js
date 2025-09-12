@@ -9,6 +9,7 @@ class HomePage {
             'gametable-container',
             'gallery-container'
         ]
+        this.rulesPage = 1;
         this.init();
     }
 
@@ -371,6 +372,63 @@ class HomePage {
 document.addEventListener('DOMContentLoaded', () => {
     window.homePage = new HomePage();
 });
+
+window.showRules = () => {
+    window.homePage.rulesPage = 1;
+    const rules = document.getElementById('rules-container');
+    const page1 = document.getElementById('rules-page1');
+    const pageControlLeft = document.getElementById('page-control-left');
+    const allPage = document.querySelectorAll('.rules-page');
+    pageControlLeft.style.visibility = 'hidden';
+    allPage.forEach(page => {
+        page.style.display = 'none';
+    })
+    page1.style.display = 'flex';
+    rules.style.display = 'flex';
+
+
+
+}
+window.hideRules = () => {
+    const rules = document.getElementById('rules-container');
+    rules.style.display = 'none';
+    window.playGameSound.click();
+}
+
+window.changeRulesPage = (direction) => {
+    const pageControlLeft = document.getElementById('page-control-left');
+    const pageControlRight = document.getElementById('page-control-right');
+    if (direction === 1 && window.homePage.rulesPage < 10) {
+        const nowPage = document.getElementById(`rules-page${window.homePage.rulesPage}`);
+        if (nowPage) {
+            nowPage.style.display = 'none';
+        }
+        const nextPage = document.getElementById(`rules-page${window.homePage.rulesPage + 1}`);
+        if (nextPage) {
+            nextPage.style.display = 'flex';
+        }
+        window.homePage.rulesPage += 1;
+        if (window.homePage.rulesPage === 10) {
+            pageControlRight.style.visibility = 'hidden';
+        }
+        pageControlLeft.style.visibility = 'visible';
+    } else if (direction === -1 && window.homePage.rulesPage > 1) {
+        const nowPage = document.getElementById(`rules-page${window.homePage.rulesPage}`);
+        if (nowPage) {
+            nowPage.style.display = 'none';
+        }
+        const prevPage = document.getElementById(`rules-page${window.homePage.rulesPage - 1}`);
+        if (prevPage) {
+            prevPage.style.display = 'flex';
+        }
+        window.homePage.rulesPage -= 1;
+        if (window.homePage.rulesPage === 1) {
+            pageControlLeft.style.visibility = 'hidden';
+        }
+        pageControlRight.style.visibility = 'visible';
+    }
+    window.playGameSound.click();
+}
 
 // 頁面卸載時清理
 window.addEventListener('beforeunload', () => {
