@@ -44,65 +44,9 @@ class AudioManager {
         }
     }
 
-    // 載入音效檔案
-    // async loadSounds() {
-    //     const soundFiles = {
-    //         click: '../static/sounds/click.mp3',
-    //         hover: '../static/sounds/hover.mp3',
-    //         pop: '../static/sounds/pop.mp3',
-    //         main_menu: '../static/sounds/main_menu.mp3',
-    //         vinyl_stop: '../static/sounds/vinyl_stop.mp3',
-    //         room_waiting: '../static/sounds/room_waiting.mp3',
-    //         vote_topic: '../static/sounds/vote_topic.mp3',
-    //         bell_multi: '../static/sounds/bell_multi.mp3',
-    //         artist_drawing: '../static/sounds/artist_drawing.mp3',
-    //         spy_drawing: '../static/sounds/spy_drawing.mp3',
-    //         dot_printer: '../static/sounds/dot_printer.mp3',
-    //         bell: '../static/sounds/bell.mp3',
-    //         show_art1: '../static/sounds/show_art1.mp3',
-    //         show_art2: '../static/sounds/show_art2.mp3',
-    //         vote_spy: '../static/sounds/vote_spy.mp3',
-    //         voted_spy: '../static/sounds/voted_spy.mp3',
-    //         vote_spy_correct: '../static/sounds/vote_spy_correct.mp3',
-    //         vote_spy_wrong: '../static/sounds/vote_spy_wrong.mp3',
-    //         drum_roll: '../static/sounds/drum_roll.mp3',
-    //         gasp: '../static/sounds/gasp.mp3',
-    //         spy_guess: '../static/sounds/spy_guess.mp3',
-    //         game_end: '../static/sounds/game_end.mp3',
-    //         party_blower: '../static/sounds/party_blower.mp3',
-    //         cheer: '../static/sounds/cheer.mp3',
-    //         yay: '../static/sounds/yay.mp3',
-    //         gallery: '../static/sounds/gallery.mp3',
-    //         hmmm1: '../static/sounds/hmmm1.mp3',
-    //         hmmm2: '../static/sounds/hmmm2.mp3',
-    //         hmmm3: '../static/sounds/hmmm3.mp3',
-    //         hmmm4: '../static/sounds/hmmm4.mp3',
-    //         hmmm5: '../static/sounds/hmmm5.mp3',
-    //         hmmm6: '../static/sounds/hmmm6.mp3',
-    //         hmmm7: '../static/sounds/hmmm7.mp3',
-    //         hmmm8: '../static/sounds/hmmm8.mp3',
-    //         ready_play_again: '../static/sounds/ready_play_again.mp3'
-    //     };
+    async loadSounds(fileDict) {
 
-    //     // 載入所有音效檔案
-    //     for (const [name, url] of Object.entries(soundFiles)) {
-    //         try {
-    //             const audio = new Audio(url);
-    //             audio.volume = this.volume;
-    //             // 如果是需要重複播放的音效
-    //             if (this.loopSounds.includes(name)) {
-    //                 audio.loop = true;
-    //             }
-    //             this.sounds[name] = audio;
-    //         } catch (error) {
-    //             console.warn(`無法載入音效檔案 ${name}:`, error);
-    //         }
-    //     }
-    // }
-
-    loadSounds(fileDict) {
-
-        return Promise.all(
+        await Promise.all(
             Object.entries(fileDict).map(([name, url]) => {
                 return new Promise((resolve, reject) => {
                     const audio = new Audio(url);
@@ -124,9 +68,8 @@ class AudioManager {
                     };
                 });
             })
-        ).then(() => {
-            console.log('所有音效載入完成');
-        });
+        );
+        console.log('所有音效載入完成');
     }
 
     // 播放音效
@@ -296,6 +239,7 @@ class AudioManager {
             click: () => manager.play('click'),
             hover: () => manager.play('hover'),
             pop: () => manager.play('pop'),
+            error: () => manager.play('error'),
             main_menu: () => manager.playBackgroundMusic('main_menu'),
             room_waiting: () => manager.playBackgroundMusic('room_waiting'),
             vote_topic: () => manager.playBackgroundMusic('vote_topic'),
@@ -403,9 +347,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.SFX.setVolume(volume);
                 window.SFX.pop();
                 if (volume > 0) {
+                    if (window.audioManager.lastVolume === 0) {
+                        volumeIcon.src = "../static/images/icons/Speaker.svg"; // 如果 lastVolume 為 0，設為預設值 0.5
+                    }
                     window.audioManager.lastVolume = volume; // 只有在非靜音時才更新 lastVolume
-                    volumeIcon.src = "../static/images/icons/Speaker.svg";
                 } else {
+                    window.audioManager.lastVolume = volume;
                     volumeIcon.src = "../static/images/icons/SpeakerMute.svg";
                 }
             }
@@ -444,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hover: () => window.SFX && window.SFX.hover(),
         stopMusic: () => window.SFX && window.SFX.stopMusic(),
         pop: () => window.SFX && window.SFX.pop(),
+        error: () => window.SFX && window.SFX.error(),
         main_menu: () => window.SFX && window.SFX.main_menu(),
         room_waiting: () => window.SFX && window.SFX.room_waiting(),
         vote_topic: () => window.SFX && window.SFX.vote_topic(),

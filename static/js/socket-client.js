@@ -203,6 +203,13 @@ class SocketClient {
             if (window.playGameSound) {
                 window.playGameSound.error();
             }
+            if (data.type === 'create_join_room') {
+                const createJoinRoomNotification = document.getElementById('create-join-room-notification');
+                if (createJoinRoomNotification) {
+                    createJoinRoomNotification.textContent = data.message || '發生錯誤';
+                    GameUtils.hideLoading();
+                }
+            }
         });
 
         // 統計資訊更新

@@ -5,13 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
-    <!-- Open Graph 標籤 -->
-    <meta property="og:title" content="AI亂畫害我輸" />
-    <meta property="og:description" content="一款讓 AI 亂畫，揪出間諜的遊戲！" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.jerryai.me:5566/playgame" />
-    <meta property="og:image" content="{{ url_for('static', filename='images/preview.png') }}" />
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content="https://www.jerryai.me:5566/playgame">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="AI亂畫害我輸">
+    <meta property="og:description" content="一款讓 AI 亂畫，揪出間諜的遊戲！">
+    <meta property="og:image" content="https://www.jerryai.me:5566/static/images/preview.png">
     <meta property="og:locale" content="zh_TW" />
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="twitter:domain" content="jerryai.me">
+    <meta property="twitter:url" content="https://www.jerryai.me:5566/playgame">
+    <meta name="twitter:title" content="AI亂畫害我輸">
+    <meta name="twitter:description" content="一款讓 AI 亂畫，揪出間諜的遊戲！">
+    <meta name="twitter:image" content="https://www.jerryai.me:5566/static/images/preview.png">
 
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <title>AI亂畫害我輸</title>
@@ -36,6 +44,7 @@
             <img src="{{ url_for('static', filename='images/logo.png') }}" class="homepage-title-img">
             <div class="homepage-title gelatine">一款讓 AI 亂畫的遊戲！</div>
             <div class="create-join-room">
+                <div class="create-join-room-notification" id="create-join-room-notification"></div>
                 <div class="create-join-room-container">
                     <div class="room-action">
                         <input class="text-input" type="text" id="host-name" name="name" maxlength="10" size="10"
@@ -50,7 +59,7 @@
                         <div class="or-bar"></div>
                     </div>
                     <div class="room-action">
-                        <input class="text-input" type="text" id="room-code" name="name" maxlength="10" size="10"
+                        <input class="text-input" type="text" id="room-code" name="name" maxlength="8" size="10"
                             placeholder="房間代號" />
                         <input class="text-input" type="text" id="player-name" name="name" maxlength="10" size="10"
                             placeholder="暱稱" />

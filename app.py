@@ -376,9 +376,10 @@ def handle_create_room(data):
         logger.info(f'請求數據: {data}')
 
         # 驗證玩家名稱
-        if not player_name or len(player_name) > 12:
+        if not player_name or len(player_name) > 10:
             logger.warning(f'玩家名稱驗證失敗: {player_name}')
-            emit('error', {'message': '玩家名稱長度需在1-12個字元之間'})
+            emit('error', {'type': 'create_join_room',
+                 'message': '玩家名稱長度需在1-10個字元之間'})
             return
 
         # 生成房間ID
@@ -424,7 +425,8 @@ def handle_create_room(data):
 
     except Exception as e:
         logger.error(f'建立房間錯誤: {e}', exc_info=True)
-        emit('error', {'message': f'建立房間失敗: {str(e)}'})
+        emit('error', {'type': 'create_join_room',
+             'message': f'建立房間失敗: {str(e)}'})
 
 
 @socketio.on('join_room')
@@ -439,32 +441,38 @@ def handle_join_room(data):
 
         # 驗證輸入
         if not room_id or len(room_id) != 8:
-            emit('error', {'message': '請輸入正確的房間代碼'})
+            emit('error', {'type': 'create_join_room',
+                 'message': '請輸入正確的8碼房間代碼'})
             return
 
-        if not player_name or len(player_name) > 12:
-            emit('error', {'message': '玩家名稱長度需在1-12個字元之間'})
+        if not player_name or len(player_name) > 10:
+            emit('error', {'type': 'create_join_room',
+                 'message': '玩家名稱長度需在1-10個字元之間'})
             return
 
         room = game_manager.get_room(room_id)
         logger.info(f'找到房間: {room is not None}')
 
         if not room:
-            emit('error', {'message': f'房間 {room_id} 不存在或已關閉'})
+            emit('error', {'type': 'create_join_room',
+                 'message': f'房間 {room_id} 不存在或已關閉'})
             return
 
         if len(room.players) >= 8:
-            emit('error', {'message': '房間已滿（最多8人）'})
+            emit('error', {'type': 'create_join_room',
+                 'message': '房間已滿（最多8人）'})
             return
 
         # 檢查名稱是否重複
         if any(p.name == player_name for p in room.players):
-            emit('error', {'message': '房間內已有相同名稱的玩家'})
+            emit('error', {'type': 'create_join_room',
+                 'message': '房間內已有相同名稱的玩家'})
             return
 
         # 檢查遊戲是否已開始
         if room.phaseName[room.phase] != 'waiting':  # 0 代表等待階段
-            emit('error', {'message': '遊戲已開始，無法加入'})
+            emit('error', {'type': 'create_join_room',
+                 'message': '遊戲已開始，無法加入'})
             return
 
         # 建立玩家並加入房間
@@ -496,7 +504,7 @@ def handle_join_room(data):
 
     except Exception as e:
         logger.error(f'加入房間錯誤: {e}', exc_info=True)
-        emit('error', {'message': '加入房間失敗，請重試'})
+        emit('error', {'type': 'create_join_room', 'message': '加入房間失敗，請重試'})
 
 
 @socketio.on('ping')

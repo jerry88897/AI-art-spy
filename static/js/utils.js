@@ -18,8 +18,8 @@ class GameUtils {
         }
     }
 
-    static preloadStaticImages(imageSrcs) {
-        if (!imageSrcs.length) return Promise.resolve();
+    static async preloadStaticImages(imageSrcs) {
+        if (!imageSrcs.length) return;
 
         const imagePromises = imageSrcs.map(src => {
             return new Promise((resolve, reject) => {
@@ -30,7 +30,7 @@ class GameUtils {
             });
         });
 
-        return Promise.all(imagePromises);
+        await Promise.all(imagePromises);
     }
 
     // 顯示錯誤訊息
