@@ -1089,7 +1089,11 @@ class RoomPage {
                 if (data.guess_spy_correct === true) {
                     realSpyTips.textContent = '間諜被大家識破了!';
                     realSpyBanner.textContent = `${spy.name} 是間諜！`;
-                    spyAvatar.classList.add('bounce');
+                    const shockSvg = document.createElement('img');
+                    shockSvg.src = '../static/images/shock.svg';
+                    shockSvg.className = 'shock-svg';
+                    realSpyDisplay.appendChild(shockSvg);
+                    realSpyDisplay.classList.add('bounce');
                 } else {
                     realSpyTips.innerHTML = '間諜沒被識破！<br>取得了一半的勝利!';
                     realSpyBanner.textContent = `${spy.name} 是間諜！`;

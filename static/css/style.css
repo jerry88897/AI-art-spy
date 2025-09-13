@@ -2213,6 +2213,14 @@ p {
     margin: 150px;
 }
 
+.shock-svg {
+    position: absolute;
+
+    width: 150px;
+
+    transform: translate(124px, -123px);
+}
+
 .real-spy-avatar {
     width: 300px;
     height: 300px;

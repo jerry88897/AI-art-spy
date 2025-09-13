@@ -120,7 +120,7 @@ def preload_static_files():
         # 預加載圖片檔案
         for root, _, files in os.walk(images_folder):
             for file in files:
-                if file.rsplit('.', 1)[-1].lower() in {'png', 'jpg'}:
+                if file.rsplit('.', 1)[-1].lower() in {'png', 'jpg', 'svg'}:
                     # 強制轉成 "../static/..."
                     relative_path = os.path.join(
                         '../static', os.path.relpath(
@@ -734,11 +734,11 @@ def handle_start_game(data=None):
             'players': [p.to_dict() for p in room.players]
         }, room=room_id)
         # debug直接跳到投票階段
-        socketio.emit('start_voting_spy', {
-            'room_id': room_id,
-            'round': room.current_round,
-            'players': [p.to_dict() for p in room.players]
-        }, room=room_id)
+        # socketio.emit('start_voting_spy', {
+        #     'room_id': room_id,
+        #     'round': room.current_round,
+        #     'players': [p.to_dict() for p in room.players]
+        # }, room=room_id)
 
         # debug直接跳到藝廊階段
         # 打包每個玩家的繪圖資料
