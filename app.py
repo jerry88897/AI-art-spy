@@ -15,6 +15,8 @@ import logging
 import base64
 import secrets
 from markupsafe import escape
+from PIL import Image
+import io
 
 # 配置上傳設定
 UPLOAD_FOLDER = 'art_output'
@@ -260,7 +262,15 @@ def upload_images():
             if file.filename == '':
                 continue
             try:
-                file_data = base64.b64encode(file.read()).decode('utf-8')
+                # 先將 PNG 轉為 JPG
+                ext = file.filename.rsplit('.', 1)[-1].lower()
+                img_bytes = file.read()
+                if ext == 'png':
+                    img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
+                    buf = io.BytesIO()
+                    img.save(buf, format='JPEG')
+                    img_bytes = buf.getvalue()
+                file_data = base64.b64encode(img_bytes).decode('utf-8')
                 last_submitted_data.image_data.append(file_data)
                 fileNo += 1
             except Exception as e:
@@ -724,11 +734,11 @@ def handle_start_game(data=None):
             'players': [p.to_dict() for p in room.players]
         }, room=room_id)
         # debug直接跳到投票階段
-        # socketio.emit('start_voting_spy', {
-        #     'room_id': room_id,
-        #     'round': room.current_round,
-        #     'players': [p.to_dict() for p in room.players]
-        # }, room=room_id)
+        socketio.emit('start_voting_spy', {
+            'room_id': room_id,
+            'round': room.current_round,
+            'players': [p.to_dict() for p in room.players]
+        }, room=room_id)
 
         # debug直接跳到藝廊階段
         # 打包每個玩家的繪圖資料

@@ -35,7 +35,7 @@
         <div id="loading-overlay" class="loading-overlay">
             <div class="loading-spinner">
                 <div class="spinner"></div>
-                <p id="loading-text">載入中...</p>
+                <p id="loading-text">載入遊戲素材...</p>
             </div>
         </div>
         <!-- JavaScript -->
@@ -107,6 +107,9 @@
                 <button class="btn btn-danger" onclick="leaveRoom()">
                     離開房間
                 </button>
+                <button class="btn btn-info" id="rules-btn" onclick="showRules()">
+                    遊戲規則
+                </button>
             </div>
             <div class="avatar-select-container" id="avatar-select-container">
             </div>
@@ -136,6 +139,7 @@
                         <div class="drawing-input-area" id="drawing-input-area">
                             <input class="text-input prompt-input" type="text" id="prompt-text" name="prompt-text"
                                 maxlength="30" size="30" placeholder="想繪製的內容..." />
+                            <div class="style-header">你想要的畫作風格:</div>
                             <div class="style-option" id="selected-style"><img class="style-option-img"
                                     id="selected-style-image" src="../static/images/styles/real_photo.jpg">
                                 <div class="style-introduction-block">
@@ -419,6 +423,7 @@
                     <div class="rules-text-area">
                         <p>如果間諜猜出關鍵字但已被識破，則間諜逆轉勝。</p>
                         <p>如果間諜猜出關鍵字且未被識破，則間諜大獲全勝。</p>
+                        <p>因此，絕對不能讓間諜猜到關鍵字。</p>
                     </div>
                     <div class="rules-image-area">
                         <img src="../static/images/rule/spyWin.png" id="rule-spyWin-image">
@@ -439,23 +444,24 @@
             </div>
 
         </div>
-        <div class="follow-interface" id="follow-interface">
-        </div>
+    </div>
+    <div class="follow-interface" id="follow-interface">
+    </div>
 
-        <script>
-            // 頁面載入完成後隱藏載入遮罩
-            window.addEventListener('load', function () {
-                initParticles();
-            });
-        </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"></script>
-        <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/particles.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/home.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/room.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/socket-client.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/confetti.js') }}"></script>
+    <script>
+        // 頁面載入完成後隱藏載入遮罩
+        window.addEventListener('load', function () {
+            initParticles();
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/room.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/socket-client.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/confetti.js') }}"></script>
 </body>
 
 </html>

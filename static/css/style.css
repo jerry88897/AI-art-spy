@@ -429,10 +429,12 @@ p {
     align-items: center;
     flex-direction: column;
     flex-wrap: nowrap;
-    justify-content: space-between;
+    justify-content: flex-start;
 
     width: 100%;
     height: 50%;
+
+    gap: 10px;
 }
 
 .create-join-room-container {
@@ -1027,8 +1029,13 @@ p {
     display: flex;
     align-items: flex-start;
     justify-content: center;
+}
 
-    margin: 30px 0 0 0;
+.style-header {
+    font-size: 25px;
+
+    width: 100%;
+    padding-left: 10px;
 }
 
 .style-selection-area {
@@ -1123,6 +1130,10 @@ p {
     text-align: left;
 
     color: var(--text-primary);
+}
+
+#submit-order {
+    margin-top: 10px;
 }
 
 
@@ -2342,6 +2353,23 @@ p {
     border: 2px solid var(--border-color);
     border-radius: 35px;
     background: var(--bg-card);
+}
+
+.guess-option-selected {
+    font-size: 30px;
+    font-weight: 100;
+    line-height: 70px;
+
+    width: 400px;
+    height: 70px;
+
+    transition: all 0.3s ease;
+    text-align: center;
+
+    color: var(--text-artistic);
+    border: 2px solid var(--border-color);
+    border-radius: 35px;
+    background: var(--warning-color);
 }
 
 .guess-option:hover {

@@ -477,13 +477,5 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// 點擊模態框背景關閉
-document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('modal')) {
-        e.target.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-});
-
 // 輸出工具類供其他文件使用
 window.GameUtils = GameUtils;

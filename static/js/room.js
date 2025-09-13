@@ -11,7 +11,7 @@ class RoomPage {
         this.timeBeforeShowRealTopic = 4200;
         this.timeBeforeShowResult = 3000;
         this.timeBeforeCelebration = 3000;
-        this.timeBeforeGallery = 10000;
+        this.timeBeforeGallery = 13000;
 
         this.hasChooseTopic = false;
         this.hasSendPrompt = false;
@@ -34,6 +34,8 @@ class RoomPage {
         this.myPlayerId = data.player.id;
         this.IamSpy = false;
         this.spyId = null;
+
+        this.drawingRound = 1;
 
         this.nowDisplayingContainer = 'room-container';
         this.homepage_container = document.getElementById('homepage-container');
@@ -238,7 +240,8 @@ class RoomPage {
     // 處理開始投票主題
     handleStartVotingTopic(data) {
         if (!data) return;
-
+        this.drawingRound = 0;
+        document.getElementById('current-round').textContent = `第 1 輪`;
         const topicDisplay = document.getElementById('topic-display');
         const keyWordDisplay = document.getElementById('keyWord-display');
         topicDisplay.style.display = 'none';
@@ -328,6 +331,8 @@ class RoomPage {
 
     // 處理輸入繪圖提詞開始
     handleWriteDrawingPrompt() {
+        this.drawingRound += 1;
+        document.getElementById('current-round').textContent = `第 ${this.drawingRound} 輪`;
         const promptInput = document.getElementById('prompt-text');
         const drawingTips = document.getElementById('drawing-tips');
         this.hasSendPrompt = false;
@@ -368,7 +373,7 @@ class RoomPage {
                 const imgdiv = document.createElement('div');
                 imgdiv.className = 'artwork-select-container'; // 可選：添加樣式類名
                 const img = document.createElement('img');
-                img.src = `data:image/png;base64,${imageData}`;
+                img.src = `data:image/jpeg;base64,${imageData}`;
                 img.alt = `Artwork ${index + 1}`;
                 img.className = 'artwork-select-image'; // 可選：添加樣式類名
 
@@ -400,7 +405,7 @@ class RoomPage {
         artShowContent.innerHTML = '';
 
         if (artImage && data.selected_art) {
-            artImage.src = `data:image/png;base64,${data.selected_art}`;
+            artImage.src = `data:image/jpeg;base64,${data.selected_art}`;
             artImage.className = 'art-show-image';
             artShowContent.appendChild(artImage);
         }
@@ -419,7 +424,7 @@ class RoomPage {
         if (creatorArtPlace) {
             const inGameArtImageBlock = document.createElement('div');
             inGameArtImageBlock.className = 'in-game-player-art-block';
-            inGameArtImage.src = `data:image/png;base64,${data.selected_art}`;
+            inGameArtImage.src = `data:image/jpeg;base64,${data.selected_art}`;
             inGameArtImage.className = 'in-game-player-art-img';
             inGameArtFrame.src = '../static/images/frame/default.png';
             inGameArtFrame.className = 'in-game-player-art-frame';
@@ -442,7 +447,7 @@ class RoomPage {
         inGameArtFrame.addEventListener('mouseenter', () => {
             const zoomedArtContainer = document.getElementById('zoomed-art-container');
             const zoomedArtImage = document.getElementById('zoomed-art-image');
-            zoomedArtImage.src = `data:image/png;base64,${data.selected_art}`;
+            zoomedArtImage.src = `data:image/jpeg;base64,${data.selected_art}`;
             const zoomedArtFrame = document.getElementById('zoomed-art-frame');
             zoomedArtFrame.src = '../static/images/frame/default.png';
             zoomedArtContainer.style.display = 'flex';
@@ -803,36 +808,6 @@ class RoomPage {
         });
     }
 
-    // 顯示作品畫廊
-    showArtworksGallery(drawings) {
-        const gallery = document.getElementById('artworks-gallery');
-        const galleryGrid = document.getElementById('gallery-grid');
-
-        if (!gallery || !galleryGrid || !drawings) return;
-
-        galleryGrid.innerHTML = drawings.map((drawing, index) =>
-            this.createArtworkItem(drawing, index)
-        ).join('');
-
-        gallery.style.display = 'block';
-        gallery.classList.add('show');
-    }
-
-    // 建立作品項目
-    createArtworkItem(drawing, index) {
-        if (!drawing) return '';
-
-        return `
-        <div class="artwork-item" style="animation-delay: ${index * 0.1}s">
-            <div class="artwork-round">第${drawing.round || 1}輪</div>
-            <img src="${drawing.image_data || ''}" alt="${drawing.player_name || 'Unknown'}的作品">
-            <div class="artwork-info">
-                <div class="artwork-player">${drawing.player_name || 'Unknown'}</div>
-                <div class="artwork-prompt">"${drawing.prompt || ''}"</div>
-            </div>
-        </div>
-    `;
-    }
 
     generatetopicAnnouncementInterface(data) {
         this.showArea('topic-announcement-area');
@@ -1225,10 +1200,11 @@ class RoomPage {
                         allOptions.forEach(opt => {
                             opt.removeEventListener('mouseenter', guessOptionsMouseEnterHandler);
                         });
+                        optionElement.className = 'guess-option-selected';
                     }
                 });
-                optionElement.addEventListener('mouseenter', guessOptionsMouseEnterHandler);
             }
+            optionElement.addEventListener('mouseenter', guessOptionsMouseEnterHandler);
             spyGuessInterface.appendChild(optionElement);
         });
     }
@@ -1278,6 +1254,11 @@ class RoomPage {
                 })
                 .then(() => {
                     answerResultDiv.textContent = data.correct ? '正確!' : '錯誤!';
+                    if (data.correct) {
+                        window.playGameSound.correct();
+                    } else {
+                        window.playGameSound.error();
+                    }
                     spyGuessResultInterface.appendChild(answerResultDiv);
                     return wait(this.timeBeforeCelebration);
                 }).then(() => {
@@ -1365,7 +1346,7 @@ class RoomPage {
                 imgFrame.className = 'gallery-main-img-frame';
 
                 const img = document.createElement('img');
-                img.src = `data:image/png;base64,${submitted_data.image_data[submitted_data.selectedImage]}`;
+                img.src = `data:image/jpeg;base64,${submitted_data.image_data[submitted_data.selectedImage]}`;
                 img.className = 'gallery-main-img';
 
                 imgContainer.appendChild(imgFrame);
@@ -1388,7 +1369,7 @@ class RoomPage {
                     fiMainImgContainer.className = 'follow-main-img-container';
                     const fiMainImg = document.createElement('img');
                     fiMainImg.className = 'follow-main-img';
-                    fiMainImg.src = `data:image/png;base64,${submitted_data.image_data[submitted_data.selectedImage]}`;
+                    fiMainImg.src = `data:image/jpeg;base64,${submitted_data.image_data[submitted_data.selectedImage]}`;
                     fiMainImgContainer.appendChild(fiMainImg);
 
                     const fiMainImgFrame = document.createElement('img');
@@ -1413,7 +1394,7 @@ class RoomPage {
 
                             const img = document.createElement('img');
                             img.className = 'none-select-img';
-                            img.src = `data:image/png;base64,${submitted_data.image_data[index] || ''}`;
+                            img.src = `data:image/jpeg;base64,${submitted_data.image_data[index] || ''}`;
                             noneSelectImgcontainer.appendChild(img);
 
                             noneSelectImgDiv.appendChild(noneSelectImgcontainer);
