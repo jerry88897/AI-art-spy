@@ -40,16 +40,25 @@ class SocketClient {
     // 設定事件監聽器
     setupEventListeners() {
         if (!this.socket) return;
-
         // 連接事件
-        this.socket.on('connect', () => {
+        this.socket.on('connected', (data) => {
             console.log('WebSocket 已連接');
             this.connected = true;
             this.reconnectAttempts = 0;
-            GameUtils.hideLoading();
 
-            if (window.playGameSound) {
-                window.playGameSound.main_menu();
+            // 預加載靜態檔案
+            if (data.preload_files) {
+                Promise.all([
+                    window.audioManager.loadSounds(data.preload_files['sounds']),
+                    GameUtils.preloadStaticImages(data.preload_files['images'])
+                ]).then(() => {
+                    GameUtils.hideLoading();
+                    if (window.playGameSound) {
+                        window.playGameSound.main_menu();
+                    }
+                }).catch((error) => {
+                    console.error('預加載失敗:', error);
+                });
             }
         });
 
@@ -64,7 +73,6 @@ class SocketClient {
             this.reconnectAttempts++;
 
             if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-                GameUtils.hideLoading();
                 GameUtils.showError('無法連接到伺服器，請重新整理頁面');
             }
 

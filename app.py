@@ -23,10 +23,6 @@ MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB 最大檔案大小
 COMFY_API = 'http://127.0.0.1:8188/'
 
 
-# 確保 art 資料夾存在
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
 # 設定日誌
 logging.basicConfig(level=logging.INFO)
 logging.getLogger('socketio').setLevel(logging.DEBUG)
@@ -34,12 +30,10 @@ logging.getLogger('engineio').setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 app.config['COMFY_API'] = COMFY_API
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1800
 
-# 修正 SocketIO 配置 - 移除可能導致問題的參數
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
@@ -111,6 +105,49 @@ def count_images_in_folder(folder_path):
 
 # 計算 AVATAR_FOLDER 中的圖片檔案數量
 AVATAR_COUNT = count_images_in_folder(AVATAR_FOLDER)
+
+PRELOAD_FILES = {}
+
+
+def preload_static_files():
+    """預加載 static 資料夾中的圖片和聲音檔案"""
+    images_folder = './static/images'
+    sounds_folder = './static/sounds'
+    preload_files = {'images': [], 'sounds': {}}
+    try:
+        # 預加載圖片檔案
+        for root, _, files in os.walk(images_folder):
+            for file in files:
+                if file.rsplit('.', 1)[-1].lower() in {'png', 'jpg'}:
+                    # 強制轉成 "../static/..."
+                    relative_path = os.path.join(
+                        '../static', os.path.relpath(
+                            os.path.join(root, file), 'static')
+                    ).replace("\\", "/")
+                    preload_files['images'].append(relative_path)
+
+        logger.info(f'已預加載圖片檔案: {len(preload_files["images"])} 個')
+
+        # 預加載聲音檔案
+        for root, _, files in os.walk(sounds_folder):
+            for file in files:
+                if file.rsplit('.', 1)[-1].lower() == 'mp3':
+                    relative_path = os.path.join(
+                        '../static', os.path.relpath(
+                            os.path.join(root, file), 'static')
+                    ).replace("\\", "/")
+                    preload_files['sounds'][os.path.splitext(
+                        file)[0]] = relative_path
+
+        logger.info(f'已預加載聲音檔案: {len(preload_files["sounds"])} 個')
+        return preload_files
+    except Exception as e:
+        logger.error(f'預加載檔案時發生錯誤: {e}')
+        return {'images': {}, 'sounds': {}}
+
+
+# 預加載 static 資料夾中的檔案
+PRELOAD_FILES = preload_static_files()
 
 
 @app.route('/')
@@ -271,8 +308,12 @@ def default_error_handler(e):
 def handle_connect():
     """處理客戶端連接"""
     logger.info(f'客戶端已連接: {request.sid}')
+
     try:
-        emit('connected', {'message': '成功連接到伺服器'})
+        emit('connected', {
+            'message': '成功連接到伺服器',
+            'preload_files': PRELOAD_FILES
+        })
     except Exception as e:
         logger.error(f'連接處理錯誤: {e}')
 

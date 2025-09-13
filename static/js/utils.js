@@ -18,6 +18,21 @@ class GameUtils {
         }
     }
 
+    static preloadStaticImages(imageSrcs) {
+        if (!imageSrcs.length) return Promise.resolve();
+
+        const imagePromises = imageSrcs.map(src => {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(src);
+                img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+                img.src = src;
+            });
+        });
+
+        return Promise.all(imagePromises);
+    }
+
     // 顯示錯誤訊息
     static showError(message) {
         const toast = document.getElementById('error-toast');
