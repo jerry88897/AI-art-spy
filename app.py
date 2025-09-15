@@ -163,6 +163,12 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/credit')
+def credit():
+    """音樂授權頁面"""
+    return render_template('MusicCredit.html')
+
+
 def allowed_file(filename):
     """檢查檔案副檔名是否允許"""
     return '.' in filename and \

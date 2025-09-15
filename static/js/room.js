@@ -381,11 +381,12 @@ class RoomPage {
                 imgdiv.appendChild(img); // 添加 img 到容器中
 
                 const frameImg = document.createElement('img');
-                frameImg.src = `../static/images/frame/default.png`;
+                frameImg.src = `../static/images/frame/default.webp`;
                 frameImg.className = 'artwork-select-frame'; // 可選：添加樣式類名
                 frameImg.addEventListener('click', () => {
                     if (this.hasChooseArt) return;
                     window.submitSelectedArt(index); // 點擊時觸發並傳送索引值
+                    this.hasChooseArt = true;
                 });
 
                 imgdiv.appendChild(frameImg); // 添加框架到容器中
@@ -410,7 +411,7 @@ class RoomPage {
             artShowContent.appendChild(artImage);
         }
         const artFrame = document.createElement('img');
-        artFrame.src = '../static/images/frame/default.png';
+        artFrame.src = '../static/images/frame/default.webp';
         artFrame.className = 'art-show-frame';
         artShowContent.appendChild(artFrame);
 
@@ -426,7 +427,7 @@ class RoomPage {
             inGameArtImageBlock.className = 'in-game-player-art-block';
             inGameArtImage.src = `data:image/jpeg;base64,${data.selected_art}`;
             inGameArtImage.className = 'in-game-player-art-img';
-            inGameArtFrame.src = '../static/images/frame/default.png';
+            inGameArtFrame.src = '../static/images/frame/default.webp';
             inGameArtFrame.className = 'in-game-player-art-frame';
             inGameArtImageBlock.appendChild(inGameArtImage);
             inGameArtImageBlock.appendChild(inGameArtFrame);
@@ -449,7 +450,7 @@ class RoomPage {
             const zoomedArtImage = document.getElementById('zoomed-art-image');
             zoomedArtImage.src = `data:image/jpeg;base64,${data.selected_art}`;
             const zoomedArtFrame = document.getElementById('zoomed-art-frame');
-            zoomedArtFrame.src = '../static/images/frame/default.png';
+            zoomedArtFrame.src = '../static/images/frame/default.webp';
             zoomedArtContainer.style.display = 'flex';
         });
 
@@ -712,7 +713,7 @@ class RoomPage {
 
         const frameImg = document.createElement('img');
         frameImg.className = 'player-frame-img';
-        frameImg.src = `../static/images/frame/${frame}.png`;
+        frameImg.src = `../static/images/frame/${frame}.webp`;
 
         playerAvatar.appendChild(avatarImg);
         playerAvatar.appendChild(frameImg);
@@ -857,6 +858,11 @@ class RoomPage {
                 .then(() => {
                     roleResultDiv.textContent = data.is_spy ? '你是間諜!' : '你是畫家!';
                     topicAnnouncementArea.appendChild(roleResultDiv);
+                    if (data.is_spy) {
+                        window.playGameSound.evil_laugh();
+                    } else {
+                        window.playGameSound.hmmm();
+                    }
                     return wait(this.timeBeforeCelebration);
                 }).then(() => {
                     topicDiv.classList.add('bounce-out');
@@ -1346,7 +1352,7 @@ class RoomPage {
                 imgContainer.className = 'gallery-main-img-container';
 
                 const imgFrame = document.createElement('img');
-                imgFrame.src = "../static/images/frame/default.png";
+                imgFrame.src = "../static/images/frame/default.webp";
                 imgFrame.className = 'gallery-main-img-frame';
 
                 const img = document.createElement('img');
@@ -1378,7 +1384,7 @@ class RoomPage {
 
                     const fiMainImgFrame = document.createElement('img');
                     fiMainImgFrame.className = 'follow-main-img-frame';
-                    fiMainImgFrame.src = "../static/images/frame/default.png";
+                    fiMainImgFrame.src = "../static/images/frame/default.webp";
                     fiMainImgContainer.appendChild(fiMainImgFrame);
 
                     fiImgContainer.appendChild(fiMainImgContainer);
@@ -1393,7 +1399,7 @@ class RoomPage {
 
                             const noneSelectImgFrame = document.createElement('img');
                             noneSelectImgFrame.className = 'none-select-img-frame';
-                            noneSelectImgFrame.src = "../static/images/frame/default.png";
+                            noneSelectImgFrame.src = "../static/images/frame/default.webp";
                             noneSelectImgcontainer.appendChild(noneSelectImgFrame);
 
                             const img = document.createElement('img');

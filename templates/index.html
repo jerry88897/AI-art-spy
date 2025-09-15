@@ -10,7 +10,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="AI亂畫害我輸">
     <meta property="og:description" content="一款讓 AI 亂畫，揪出間諜的遊戲！">
-    <meta property="og:image" content="https://www.jerryai.me:5566/static/images/preview.png">
+    <meta property="og:image" content="https://www.jerryai.me:5566/static/images/preview.jpg">
     <meta property="og:locale" content="zh_TW" />
 
     <!-- Twitter Meta Tags -->
@@ -19,7 +19,7 @@
     <meta property="twitter:url" content="https://www.jerryai.me:5566/playgame">
     <meta name="twitter:title" content="AI亂畫害我輸">
     <meta name="twitter:description" content="一款讓 AI 亂畫，揪出間諜的遊戲！">
-    <meta name="twitter:image" content="https://www.jerryai.me:5566/static/images/preview.png">
+    <meta name="twitter:image" content="https://www.jerryai.me:5566/static/images/preview.jpg">
 
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <title>AI亂畫害我輸</title>
@@ -41,7 +41,7 @@
         <!-- JavaScript -->
         <div class="homepage-container" id="homepage-container">
             <!-- <div class="homepage-title">AI亂畫害我輸</div> -->
-            <img src="{{ url_for('static', filename='images/logo.png') }}" class="homepage-title-img">
+            <img src="{{ url_for('static', filename='images/logo.webp') }}" class="homepage-title-img">
             <div class="homepage-title gelatine">一款讓 AI 亂畫的遊戲！</div>
             <div class="create-join-room">
                 <div class="create-join-room-notification" id="create-join-room-notification"></div>
@@ -69,9 +69,13 @@
                     </div>
                 </div>
             </div>
-            <button class="btn btn-info" id="rules-btn" onclick="showRules()">
-                遊戲規則
-            </button>
+            <div class="homepage-footer">
+                <button class="btn btn-info" id="rules-btn" onclick="showRules()">
+                    遊戲規則
+                </button>
+                <a href="../credit" target="_blank" class="homepage-footer-link" rel="noopener noreferrer">Music
+                    Credit</a>
+            </div>
         </div>
         <div class="room-container" id="room-container">
             <div class="room-info">
@@ -218,7 +222,7 @@
                 <div class="art-display-interface" id="art-display-interface">
                     <div class="drawing-tips" id="art-display-tips">正在等待其他玩家選擇繪圖...</div>
                     <div class="artwork-waiting" id="art-waiting-area">
-                        <img src="../static/images/gpuCat.png" class="gpuCat wave-step">
+                        <img src="../static/images/gpuCat.webp" class="gpuCat wave-step">
                     </div>
                     <div class="art-select-area" id="art-select-area">
                     </div>
@@ -301,7 +305,7 @@
                         <p>「AI亂畫害我輸」是一款結合了創意繪畫和社交推理的多人遊戲。</p>
                     </div>
                     <div class="rules-image-area">
-                        <img src="../static/images/rule/friends.png" id="friends-image">
+                        <img src="../static/images/rule/friends.webp" id="friends-image">
                     </div>
                 </div>
                 <div class="rules-page" id="rules-page2">
@@ -310,11 +314,11 @@
                     </div>
                     <div class="rules-image-area">
                         <div class="role-block">
-                            <img src="../static/images/rule/artist.png" id="role-artist">
+                            <img src="../static/images/rule/artist.webp" id="role-artist">
                             <div class="role-label">畫家</div>
                         </div>
                         <div class="role-block">
-                            <img src="../static/images/rule/pigSpy.png" id="role-spy">
+                            <img src="../static/images/rule/pigSpy.webp" id="role-spy">
                             <div class="role-label">間諜</div>
                         </div>
                     </div>
@@ -347,7 +351,7 @@
                                 <p>所有玩家根據主題繪製數張圖畫。</p>
                             </div>
                             <div class="rules-image-area">
-                                <img src="../static/images/rule/art.png" id="rule-art-image">
+                                <img src="../static/images/rule/art.webp" id="rule-art-image">
                             </div>
 
                         </div>
@@ -356,7 +360,7 @@
                                 <p>繪畫完成後，將展示一張選擇的作品。</p>
                             </div>
                             <div class="rules-image-area">
-                                <img src="../static/images/rule/showArt.png" id="rule-showArt-image">
+                                <img src="../static/images/rule/showArt.webp" id="rule-showArt-image">
                             </div>
                         </div>
                     </div>
@@ -368,7 +372,7 @@
                                 <p>兩輪繪畫後，將投票選出最可疑的玩家。</p>
                             </div>
                             <div class="rules-image-area">
-                                <img src="../static/images/rule/vote.png" id="rule-vote-image">
+                                <img src="../static/images/rule/vote.webp" id="rule-vote-image">
                             </div>
 
                         </div>
@@ -377,7 +381,7 @@
                                 <p>投票結束後，系統會揭曉間諜身份。</p>
                             </div>
                             <div class="rules-image-area">
-                                <img src="../static/images/rule/pigSpy.png" id="role-spy">
+                                <img src="../static/images/rule/pigSpy.webp" id="role-spy">
                             </div>
                         </div>
                     </div>
@@ -389,7 +393,7 @@
                                 <p>如果間諜被識破，其他玩家暫時獲勝。</p>
                             </div>
                             <div class="rules-image-area">
-                                <img src="../static/images/rule/artistWin.png" id="rule-artistWin-image">
+                                <img src="../static/images/rule/artistWin.webp" id="rule-artistWin-image">
                             </div>
 
                         </div>
@@ -398,7 +402,7 @@
                                 <p>如果間諜未被識破，則間諜獲得勝利。</p>
                             </div>
                             <div class="rules-image-area">
-                                <img src="../static/images/rule/spyWin.png" id="rule-spyWin-image">
+                                <img src="../static/images/rule/spyWin.webp" id="rule-spyWin-image">
                             </div>
                         </div>
                     </div>
@@ -408,7 +412,7 @@
                         <p>接著，間諜將有一次機會猜出關鍵字</p>
                     </div>
                     <div class="rules-image-area">
-                        <img src="../static/images/rule/spyGuess.png" id="rule-spyGuess-image">
+                        <img src="../static/images/rule/spyGuess.webp" id="rule-spyGuess-image">
                     </div>
                 </div>
                 <div class="rules-page" id="rules-page8">
@@ -416,7 +420,7 @@
                         <p>如果間諜沒能猜出關鍵字且已被識破，則畫家獲勝。</p>
                     </div>
                     <div class="rules-image-area">
-                        <img src="../static/images/rule/artistWin.png" id="rule-artistWin-image">
+                        <img src="../static/images/rule/artistWin.webp" id="rule-artistWin-image">
                     </div>
                 </div>
                 <div class="rules-page" id="rules-page9">
@@ -426,7 +430,7 @@
                         <p>因此，絕對不能讓間諜猜到關鍵字。</p>
                     </div>
                     <div class="rules-image-area">
-                        <img src="../static/images/rule/spyWin.png" id="rule-spyWin-image">
+                        <img src="../static/images/rule/spyWin.webp" id="rule-spyWin-image">
                     </div>
                 </div>
                 <div class="rules-page" id="rules-page10">
@@ -434,7 +438,7 @@
                         <p>遊戲結束後，滑鼠停在玩家的作品上，可以查看當時的指令及作品。</p>
                     </div>
                     <div class="rules-image-area">
-                        <img src="../static/images/rule/gallery.png" id="rule-gallery-image">
+                        <img src="../static/images/rule/gallery.webp" id="rule-gallery-image">
                     </div>
                 </div>
                 <div class="rules-page-control">
