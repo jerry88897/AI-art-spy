@@ -52,9 +52,9 @@ logger.info(f'GameManager rooms 初始狀態: {game_manager.rooms}')
 try:
     comfy_client = ComfyUIClient()
     # 測試連接
-    if not comfy_client.test_connection():
-        logger.warning("ComfyUI 服務不可用，將使用模擬客戶端")
-        comfy_client = MockComfyUIClient()
+    # if not comfy_client.test_connection():
+    #     logger.warning("ComfyUI 服務不可用，將使用模擬客戶端")
+    #     comfy_client = MockComfyUIClient()
 except Exception as e:
     logger.warning(f"ComfyUI 初始化失敗: {e}，使用模擬客戶端")
     comfy_client = MockComfyUIClient()

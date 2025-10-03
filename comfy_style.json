@@ -14,7 +14,7 @@
     {
         "style_name": "日本動漫",
         "introduction": "以現代動漫特色為主，線條乾淨利落，色彩鮮明，畫面明快而細膩。",
-        "prompt": "anime-style with clean, bold line art and soft cell shading; vibrant yet balanced color palette; emphasis on expressive eyes and hair highlights; simple composition with flat shadows; subtle gradients for depth; light bloom effect on edges; overall aesthetic combining classic anime simplicity with modern polish.",
+        "prompt": "anime-style with clean, bold line art and soft cell shading; vibrant yet balanced color palette; simple composition with flat shadows; subtle gradients for depth; light bloom effect on edges; overall aesthetic combining classic anime simplicity with modern polish.",
         "thumbnail": "japanese_anime_modern.jpg"
     },
     {
